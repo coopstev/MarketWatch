@@ -10,8 +10,12 @@ class Opener:
         
     def isOpen(self):
         current = datetime.now(TIMEZONE).time()
-        return current >= OPEN and current <= CLOSE
+        return current >= OPEN and current <= CLOSE and self.isWeekday()
 
     def isBeforeOpen(self):
         current = datetime.now(TIMEZONE).time()
-        return current < OPEN
+        return current < OPEN and self.isWeekday()
+
+    def isWeekday(self):
+        dayOfWeek = datetime.today().weekday()
+        return dayOfWeek >= 0 and dayOfWeek <= 4
