@@ -9,7 +9,7 @@ class Emailer:
     def __init__(self, recipients=[]):
         self.recipients = recipients
 
-        emailInfo = open(f"/home/ubuntu/MarketWatch/secrets/mailInfo.txt", 'r')
+        emailInfo = open(f"./secrets/mailInfo.txt", 'r')
         self._SMTP_SERVER = emailInfo.readline().split()[1]
         self._SMTP_PORT = int(emailInfo.readline().split()[1])
         self._SENDER = emailInfo.readline().split()[1]
@@ -31,7 +31,7 @@ class Emailer:
         self.mail.quit()
 
     def _getAppPassword(self):
-        appPasswordFile = open(f"/home/ubuntu/MarketWatch/secrets/GmailAppPassword.txt", 'r')
+        appPasswordFile = open(f"./secrets/GmailAppPassword.txt", 'r')
         appPassword = appPasswordFile.readline()
         appPasswordFile.close()
         return appPassword

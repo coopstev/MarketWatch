@@ -29,7 +29,7 @@ class DataRequester:
             i += 1
     
     def readFromCsv(self, symbols):
-        file = open(f"/home/ubuntu/MarketWatch/data/{symbols}", 'r')
+        file = open(f"./data/{symbols}", 'r')
         import csv
         csvreader = csv.reader(file)
         header = next(csvreader)
@@ -42,7 +42,7 @@ class DataRequester:
         file.close()
 
     def readFromTxt(self, symbols):
-        file = open(f"/home/ubuntu/MarketWatch/data/{symbols}", 'r')
+        file = open(f"./data/{symbols}", 'r')
         self.symbols = file.readline().split(',')
         file.close()
 

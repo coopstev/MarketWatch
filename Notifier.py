@@ -52,7 +52,7 @@ class Notifier:
                     volatile.append(symbol)
     
     def generateNotification(self):
-        filename = f"/home/ubuntu/MarketWatch/notifications/{self.currentTime()}.txt"
+        filename = f"./notifications/{self.currentTime()}.txt"
         notification = open(filename, 'w')
         notification.write(HEADER)
         for state in RSIState:
