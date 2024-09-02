@@ -14,8 +14,6 @@ class Emailer:
         self._SMTP_PORT = int(emailInfo.readline().split()[1])
         self._SENDER = emailInfo.readline().split()[1]
         emailInfo.close()
-
-        self.mail = smtplib.SMTP(self._SMTP_SERVER, self._SMTP_PORT)
     
     def __del__(self):
         try:
@@ -24,6 +22,7 @@ class Emailer:
             pass
 
     def login(self):
+        self.mail = smtplib.SMTP(self._SMTP_SERVER, self._SMTP_PORT)
         self.mail.starttls()
         self.mail.login(self._SENDER, self._getAppPassword())
 
@@ -56,7 +55,8 @@ class Emailer:
             self.mail.send_message(msg, self._SENDER, self.recipients)
             #self.mail.sendmail(self._SENDER, recipients, msg.as_string())
             self.logout()
-        except:
+        except Exception as e:
+            print(f"Emailer Exception: {e}")
             return False
         return True
 
