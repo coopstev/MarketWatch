@@ -24,9 +24,9 @@ class StateTracker:
         return bool(self.deltas)
     
     def updateStates(self):
-        for symbol, state in self.deltas:
+        for symbol, state in self.deltas.items():
             self.states[symbol] = state
         self.deltas.clear()
 
     def getDeltas(self): # I can probably remove intermittent state tracking from StateTracker, as the state is rechecked before notifying anyway
-        return self.deltas.items()
+        return self.deltas
