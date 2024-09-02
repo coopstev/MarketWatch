@@ -41,7 +41,7 @@ class Emailer:
         file.close()
         return content
     
-    def send_email(self, msgFilePath=''):
+    def send_email(self, msgFilePath='', isHTMLmsg=False):
         try:
             content = self.readTxtFile(msgFilePath)
             msg = EmailMessage()
@@ -49,7 +49,8 @@ class Emailer:
             msg['Subject'] = EMAIL_SUBJECT
             msg['From'] = self._SENDER
             msg['To'] = self.recipients
-            msg.set_content(content)
+            subtype = 'html' if isHTMLmsg else 'plain'
+            msg.set_content(content, subtype=subtype)
 
             self.login()
             self.mail.send_message(msg, self._SENDER, self.recipients)

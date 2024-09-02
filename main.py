@@ -7,6 +7,7 @@ from Notifier import Notifier
 import time
 
 RSI = "RSI"
+HTML_MESSAGE = True
 
 # startup:
 requester = DataRequester("SP500List.txt", [RSI], 120)
@@ -27,7 +28,7 @@ while opener.isOpen():
     data = retriever.getData(request)
     tracker.logChanges(data[RSI])
     if notifier.isTimeToSendNotification():
-        notifier.sendNotification(emailer, tracker)
+        notifier.sendNotification(emailer, tracker, HTML_MESSAGE)
     
     time.sleep(1)
 
