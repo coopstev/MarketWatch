@@ -38,7 +38,7 @@ class Notifier:
         self.lastSentTime = self.currentTime()
     
     def getFinalStates(self, tracker : StateTracker):
-        retreiver = DataRetriever()
+        retriever = DataRetriever()
         volatile = []
         for symbol, state in tracker.getDeltas():
             rsi = retreiver.getRSI(symbol)
