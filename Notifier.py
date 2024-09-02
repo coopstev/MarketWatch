@@ -1,6 +1,6 @@
 from StateTracker import StateTracker
 from RSIState import RSIState
-from DataRetreiver import DataRetreiver
+from DataRetriever import DataRetriever
 from Emailer import Emailer
 import time
 from os import remove
@@ -38,7 +38,7 @@ class Notifier:
         self.lastSentTime = self.currentTime()
     
     def getFinalStates(self, tracker : StateTracker):
-        retreiver = DataRetreiver()
+        retreiver = DataRetriever()
         volatile = []
         for symbol, state in tracker.getDeltas():
             rsi = retreiver.getRSI(symbol)

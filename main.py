@@ -1,4 +1,4 @@
-from DataRetreiver import DataRetreiver
+from DataRetriever import DataRetriever
 from DataRequester import DataRequester
 from Emailer import Emailer
 from Opener import Opener
@@ -9,7 +9,7 @@ import time
 # startup:
 requester = DataRequester("SP500List.txt", ['RSI'], 20)
 symbols = requester.getAllSymbols()
-retreiver = DataRetreiver()
+retreiver = DataRetriever()
 emailer = Emailer(["coopstev012@gmail.com", "lilypad22003@gmail.com"])
 notifier = Notifier()
 opener = Opener()

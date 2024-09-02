@@ -11,7 +11,7 @@ from ta.momentum import RSIIndicator
 TIMEZONE = pytz.timezone('America/New_York')
 
 
-class DataRetreiver:
+class DataRetriever:
     def __init__(self):
         self.last = 50
         self.client = RESTClient(self._getAPIKey())

@@ -1,4 +1,4 @@
-from DataRetreiver import DataRetreiver
+from DataRetriever import DataRetriever
 from datetime import datetime
 
 
@@ -6,7 +6,7 @@ def convertToDate(timeInms):
     date = datetime.fromtimestamp(timeInms // 1000)
     return date
 
-retreiver = DataRetreiver()
+retreiver = DataRetriever()
 rsi = retreiver.getData([("AAPL", "RSI")])
 print(rsi)
 for iv in rsi[0].values:
