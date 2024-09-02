@@ -6,8 +6,10 @@ from StateTracker import StateTracker
 from Notifier import Notifier
 import time
 
+RSI = "RSI"
+
 # startup:
-requester = DataRequester("SP500List.txt", ['RSI'], 20)
+requester = DataRequester("SP500List.txt", [RSI], 120)
 symbols = requester.getAllSymbols()
 retriever = DataRetriever()
 emailer = Emailer(["coopstev012@gmail.com", "lilypad22003@gmail.com"])
@@ -22,15 +24,11 @@ tracker = StateTracker(symbols)
 
 while opener.isOpen():
     request = requester.getRequest()
-    tracker.logChanges(data)
     data = retriever.getData(request)
+    tracker.logChanges(data[RSI])
     if notifier.isTimeToSendNotification():
         notifier.sendNotification(emailer, tracker)
     
-    #if data < 30:
-        #emailer.send_email()
-    #elif data > 70:
-        #emailer.send_email()
     time.sleep(1)
 
 # now the market is closed
