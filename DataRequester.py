@@ -1,17 +1,32 @@
+from math import inf
+
 class DataRequester:
-    def __init__(self, symbols=[], metrics=[]):
+    def __init__(self, symbols=[], metrics=[], batchSize=inf):
         if ".csv" in symbols:
             self.readFromCsv(symbols)
         elif ".txt" in symbols:
             self.readFromTxt(symbols)
         else:
             self.symbols = symbols
+        self.numSymbols = len(self.symbols)
         self.metrics = metrics
+        self.numMetrics = len(self.metrics)
+        self.batchSize = batchSize
+        self.numData = self.numSymbols * self.numMetrics
+        self.symbolIdx = 0
+        self.metricIdx = 0
 
     def getRequest(self):
-        for symbol in self.symbols:
-            for metric in self.metrics:
-                yield (symbol, metric)
+        i = 0
+        while i < self.batchSize and i < self.numData:
+            yield (self.symbols[self.symbolIdx], self.metrics[self.metricIdx])
+            self.symbolIdx += 1
+            if self.symbolIdx == self.numSymbols:
+                self.symbolIdx = 0
+                self.metricIdx += 1
+                if self.metricIdx == self.numMetrics:
+                    self.metricIdx = 0
+            i += 1
     
     def readFromCsv(self, symbols):
         file = open(f"/home/ubuntu/MarketWatch/data/{symbols}", 'r')
@@ -30,3 +45,6 @@ class DataRequester:
         file = open(f"/home/ubuntu/MarketWatch/data/{symbols}", 'r')
         self.symbols = file.readline().split(',')
         file.close()
+
+    def getAllSymbols(self):
+        return self.symbols
