@@ -1,5 +1,5 @@
 import random
-from polygon import RESTClient
+#from polygon import RESTClient
 import datetime
 from datetime import datetime, time, timedelta
 import time
@@ -14,7 +14,7 @@ TIMEZONE = pytz.timezone('America/New_York')
 class DataRetriever:
     def __init__(self):
         self.last = 50
-        self.client = RESTClient(self._getAPIKey())
+        #self.client = RESTClient(self._getAPIKey())
         return
     
     def _getAPIKey(self):
@@ -31,23 +31,10 @@ class DataRetriever:
             self.last = current
             return current
     
-    def getRSI(self, symbol):
-        rsi = self.client.get_rsi(
-            ticker=symbol,
-            timestamp=self.fifteenMinutesAgo(),
-            timespan="day",
-            #window=14,
-            series_type="close",
-            order="asc"
-        )
-
-        return rsi
-
-    # https://polygon.io/docs/stocks/get_v1_indicators_rsi__stockticker
-    # https://github.com/polygon-io/client-python/blob/master/polygon/rest/indicators.py
-    def getData(self, request):
-        rsiRequest = [ symbol for (symbol, metric) in request if metric == "RSI" ]
+    # returns a List of (symbol Str, RSI value np.float64) pairs
+    def getRSI(self, rsiRequest):
         numSymbols = len(rsiRequest)
+
         # Make sure to use a window with enough data for the RSI calculation.
         start = time.time()
         tickData = yf.download(tickers=rsiRequest, period='1d', interval='1m')
@@ -57,7 +44,8 @@ class DataRetriever:
         
         closeValues = tickData['Close']
 
-        metrics = []
+        rsis = []
+        timeCalculating = 0.0
 
         for symbol in rsiRequest:
             symbolTicks = closeValues[symbol]
@@ -67,20 +55,42 @@ class DataRetriever:
             rsi_14 = RSIIndicator(close=symbolTicks, window=14)
             finish = time.time()
             timeTaken = finish - start
-            print(timeTaken)
+            timeCalculating += timeTaken
+            #print(timeTaken)
 
             # This returns a Pandas series.
             rsiSeries = rsi_14.rsi()
 
-            # Latest 10 values of the day for demonstration.
             recentRSI = rsiSeries.values[-1]
-            recentState = RSIState.getState(recentRSI)
+            #recentState = RSIState.getState(recentRSI)
 
-            metrics.append((symbol, recentState))
-        #for symbol, metric in request:
-        #    if metric == "RSI":
-        #        data.append(self.getRSI(symbol))
-        return metrics
+            rsis.append((symbol, recentRSI))
+        print(f"Average RSI calculation time PER SYMBOL for {numSymbols}-batch: {timeCalculating / numSymbols}")
+        return rsis
+
+        # rsi = self.client.get_rsi(
+        #     ticker=symbol,
+        #     timestamp=self.fifteenMinutesAgo(),
+        #     timespan="day",
+        #     #window=14,
+        #     series_type="close",
+        #     order="asc"
+        # )
+
+        # return rsi
+
+    # https://polygon.io/docs/stocks/get_v1_indicators_rsi__stockticker
+    # https://github.com/polygon-io/client-python/blob/master/polygon/rest/indicators.py
+    # Returns a dictionary where each requested metric is a key and the associated value is a
+    # List of (symbol Str, RSIState) pairs
+    def getData(self, request):
+        data = {}
+        rsiRequest = [ symbol for (symbol, metric) in request if metric == "RSI" ]
+        if rsiRequest:
+            rsis = self.getRSI(rsiRequest)
+            data["RSI"] = [ (symbol, RSIState.getState(rsi)) for (symbol, rsi) in rsis ]
+        return data
+        
 
     def fifteenMinutesAgo(self):
         return datetime.now(TIMEZONE) - timedelta(days=1, minutes=15)
