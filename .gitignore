@@ -164,3 +164,6 @@ first.pem
 first.ppk
 secrets/
 .vscode*
+data/timing data.xlsx
+sp500.csv
+data/Book1 (version 1).xlsx
