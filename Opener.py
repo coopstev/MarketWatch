@@ -9,7 +9,6 @@ TIMEZONE = pytz.timezone('America/New_York')
 class Opener:
         
     def isOpen(self):
-        return True
         current = datetime.now(TIMEZONE).time()
         return current >= OPEN and current <= CLOSE and self.isWeekday()
 

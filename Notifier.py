@@ -5,9 +5,6 @@ from Emailer import Emailer
 import time
 from os import remove
 
-
-
-
 STATE_HEADERS = { RSIState.HARDSELL : "HARD SELL (75 <= RSI)",
                   RSIState.SELL     : "SELL (70 <= RSI < 75)",
                   RSIState.SOFTSELL : "SOFT SELL (65 <= RSI < 70)",
@@ -25,7 +22,6 @@ class Notifier:
         self.lastSentTime = self.currentTime()
 
     def isTimeToSendNotification(self):
-        return True
         return self.currentTime() - self.lastSentTime >= TIME_BETWEEN_NOTIFICATIONS_SECS
         
     def currentTime(self):
