@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from DataRetriever import DataRetriever
 from DataRequester import DataRequester
 from Emailer import Emailer
