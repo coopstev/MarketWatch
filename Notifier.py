@@ -44,7 +44,7 @@ class Notifier:
             if symbolState == oldState:
                 self.updates[oldState].append((symbol, rsi))
             else: # the state has changed from what the StateTracker had logged
-                if tracker.logChanges([symbol, symbolState]): # if this still qualifies as a state change, according to StateTracker
+                if tracker.logChanges([(symbol, symbolState)]): # if this still qualifies as a state change, according to StateTracker
                     self.updates[symbolState].append((symbol, rsi))
                 else: # this state has no net-change since the last notification; it may be volatile
                     volatile.append(symbol)
