@@ -37,6 +37,6 @@ while opener.isOpen():
 # now the market is closed
 
 # send an end-of-day notification
-notifier.sendNotification(emailer, tracker)
+notifier.sendNotification(emailer, tracker, HTML_MESSAGE)
 
 #stop gui
