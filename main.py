@@ -22,8 +22,8 @@ tracker = StateTracker(symbols)
 
 # start gui
 
-
-
+while opener.isBeforeOpen():
+    time.sleep(60)
 
 while opener.isOpen():
     request = requester.getRequest()
@@ -40,4 +40,3 @@ while opener.isOpen():
 notifier.sendNotification(emailer, tracker)
 
 #stop gui
-
