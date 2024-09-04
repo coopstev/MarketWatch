@@ -1,9 +1,10 @@
 import smtplib
 #from email.mime.text import MIMEText
 from email.message import EmailMessage
+from datetime import datetime
 
-## put SMTP username, password, and email_from here
-EMAIL_SUBJECT = "Notification from MarketWatch"
+DATE = datetime.now().strftime("%d/%m/%Y")
+EMAIL_SUBJECT = f"Notification from MarketWatch {DATE}"
 
 class Emailer:
     def __init__(self, recipients=[]):
