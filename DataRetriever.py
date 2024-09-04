@@ -1,7 +1,8 @@
 import random
 #from polygon import RESTClient
 import datetime
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
+from datetime import time as dttime
 import time
 import pytz
 from RSIState import RSIState
@@ -35,11 +36,19 @@ class DataRetriever:
     def getRSI(self, rsiRequest):
         numSymbols = len(rsiRequest)
 
+        USE_CUSTOM_TIME_RANGE = True
+
         # Make sure to use a window with enough data for the RSI calculation.
-        start = time.time()
-        tickData = yf.download(tickers=rsiRequest, period='1d', interval='1m')
-        finish = time.time()
-        timeTaken = finish - start
+        
+        timerStart = time.time()
+        if USE_CUSTOM_TIME_RANGE:
+            start = self.fifteenBusinessDaysAgo()
+            end = datetime.today()
+            tickData = yf.download(tickers=rsiRequest, start=start, end=end, interval='1d')
+        else:
+            tickData = yf.download(tickers=rsiRequest, period='1mo', interval='1d')
+        timerFinish = time.time()
+        timeTaken = timerFinish - timerStart
         print(f"Average download time PER SYMBOL for {numSymbols}-batch: {timeTaken / numSymbols}")
         
         closeValues = tickData['Close']
@@ -50,11 +59,11 @@ class DataRetriever:
         for symbol in rsiRequest:
             symbolTicks = closeValues[symbol]
 
-            start = time.time()
+            timerStart = time.time()
             # Use the common 14 period setting.
             rsi_14 = RSIIndicator(close=symbolTicks, window=14)
-            finish = time.time()
-            timeTaken = finish - start
+            timerFinish = time.time()
+            timeTaken = timerFinish - timerStart
             timeCalculating += timeTaken
             #print(timeTaken)
 
@@ -63,6 +72,7 @@ class DataRetriever:
 
             recentRSI = rsiSeries.values[-1]
             #recentState = RSIState.getState(recentRSI)
+            if symbol == "AMZN" : print(f"{symbol} : {recentRSI}")
 
             rsis.append((symbol, recentRSI))
         print(f"Average RSI calculation time PER SYMBOL for {numSymbols}-batch: {timeCalculating / numSymbols}")
@@ -91,6 +101,19 @@ class DataRetriever:
             data["RSI"] = [ (symbol, RSIState.getState(rsi)) for (symbol, rsi) in rsis ]
         return data
         
-
+    def currentTime(self):
+        CLOSE = dttime(15, 59)
+        current = datetime.now(TIMEZONE)
+        if current.time() > CLOSE:
+            return datetime.combine(current, CLOSE)
+        else:
+            return current
+    
     def fifteenMinutesAgo(self):
-        return datetime.now(TIMEZONE) - timedelta(days=1, minutes=15)
+        return self.currentTime() - timedelta(days=1, minutes=15)
+    
+    def fifteenDaysAgo(self):
+        return self.currentTime() - timedelta(days=15)
+    
+    def fifteenBusinessDaysAgo(self):
+        return datetime.today() - timedelta(days=21)
