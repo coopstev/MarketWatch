@@ -36,17 +36,9 @@ class DataRetriever:
     def getRSI(self, rsiRequest):
         numSymbols = len(rsiRequest)
 
-        USE_CUSTOM_TIME_RANGE = True
-
         # Make sure to use a window with enough data for the RSI calculation.
-        
         timerStart = time.time()
-        if USE_CUSTOM_TIME_RANGE:
-            start = self.fifteenBusinessDaysAgo()
-            end = datetime.today()
-            tickData = yf.download(tickers=rsiRequest, start=start, end=end, interval='1d')
-        else:
-            tickData = yf.download(tickers=rsiRequest, period='1mo', interval='1d')
+        tickData = yf.download(tickers=rsiRequest, period='6mo', interval='1d')
         timerFinish = time.time()
         timeTaken = timerFinish - timerStart
         print(f"Average download time PER SYMBOL for {numSymbols}-batch: {timeTaken / numSymbols}")
@@ -65,13 +57,11 @@ class DataRetriever:
             timerFinish = time.time()
             timeTaken = timerFinish - timerStart
             timeCalculating += timeTaken
-            #print(timeTaken)
 
             # This returns a Pandas series.
             rsiSeries = rsi_14.rsi()
 
             recentRSI = rsiSeries.values[-1]
-            #recentState = RSIState.getState(recentRSI)
             if symbol == "AMZN" : print(f"{symbol} : {recentRSI}")
 
             rsis.append((symbol, recentRSI))
