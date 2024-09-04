@@ -10,14 +10,18 @@ import time
 
 RSI = "RSI"
 HTML_MESSAGE = True
+DEBUG = False
+
+ADMIN = ["coopstev012@gmail.com"]
+SUBSCRIBERS = ["rhino9161972@yahoo.com"]
 
 # startup:
 requester = DataRequester("SP500List.txt", [RSI], 120)
 symbols = requester.getAllSymbols()
-retriever = DataRetriever()
-emailer = Emailer(["coopstev012@gmail.com", "rhino9161972@yahoo.com"])
-notifier = Notifier()
-opener = Opener()
+retriever = DataRetriever(DEBUG)
+emailer = Emailer(ADMIN if DEBUG else ADMIN + SUBSCRIBERS)
+notifier = Notifier(DEBUG)
+opener = Opener(DEBUG)
 tracker = StateTracker(symbols)
 
 # start gui

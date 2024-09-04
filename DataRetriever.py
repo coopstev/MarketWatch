@@ -13,8 +13,9 @@ TIMEZONE = pytz.timezone('America/New_York')
 
 
 class DataRetriever:
-    def __init__(self):
+    def __init__(self, debug=False):
         self.last = 50
+        self.debug = debug
         #self.client = RESTClient(self._getAPIKey())
         return
     
@@ -37,35 +38,37 @@ class DataRetriever:
         numSymbols = len(rsiRequest)
 
         # Make sure to use a window with enough data for the RSI calculation.
-        timerStart = time.time()
+        if self.debug : timerStart = time.time()
         tickData = yf.download(tickers=rsiRequest, period='6mo', interval='1d')
-        timerFinish = time.time()
-        timeTaken = timerFinish - timerStart
-        print(f"Average download time PER SYMBOL for {numSymbols}-batch: {timeTaken / numSymbols}")
+        if self.debug:
+            timerFinish = time.time()
+            timeTaken = timerFinish - timerStart
+            print(f"Average download time PER SYMBOL for {numSymbols}-batch: {timeTaken / numSymbols}")
         
         closeValues = tickData['Close']
 
         rsis = []
-        timeCalculating = 0.0
+        if self.debug : timeCalculating = 0.0
 
         for symbol in rsiRequest:
             symbolTicks = closeValues[symbol]
 
-            timerStart = time.time()
+            if self.debug : timerStart = time.time()
             # Use the common 14 period setting.
             rsi_14 = RSIIndicator(close=symbolTicks, window=14)
-            timerFinish = time.time()
-            timeTaken = timerFinish - timerStart
-            timeCalculating += timeTaken
+            if self.debug:
+                timerFinish = time.time()
+                timeTaken = timerFinish - timerStart
+                timeCalculating += timeTaken
 
             # This returns a Pandas series.
             rsiSeries = rsi_14.rsi()
 
             recentRSI = rsiSeries.values[-1]
-            if symbol == "AMZN" : print(f"{symbol} : {recentRSI}")
+            if self.debug : print(f"{symbol} : {recentRSI}")
 
             rsis.append((symbol, recentRSI))
-        print(f"Average RSI calculation time PER SYMBOL for {numSymbols}-batch: {timeCalculating / numSymbols}")
+        if self.debug : print(f"Average RSI calculation time PER SYMBOL for {numSymbols}-batch: {timeCalculating / numSymbols}")
         return rsis
 
         # rsi = self.client.get_rsi(

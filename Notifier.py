@@ -17,11 +17,13 @@ STATE_HEADERS = { RSIState.HARDSELL : "HARD SELL (75 <= RSI)",
 TIME_BETWEEN_NOTIFICATIONS_SECS = 10 * 60  # 10 minutes
 
 class Notifier:
-    def __init__(self):
+    def __init__(self, debug):
+        self.debug = debug
         self.updates = { state : [] for state in RSIState }
         self.lastSentTime = self.currentTime()
 
     def isTimeToSendNotification(self):
+        if self.debug : return True
         return self.currentTime() - self.lastSentTime >= TIME_BETWEEN_NOTIFICATIONS_SECS
         
     def currentTime(self):
