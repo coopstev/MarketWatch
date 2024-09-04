@@ -30,7 +30,8 @@ while opener.isOpen():
     data = retriever.getData(request)
     tracker.logChanges(data[RSI])
     if notifier.isTimeToSendNotification():
-        notifier.sendNotification(emailer, tracker, HTML_MESSAGE)
+        sentSuccess = notifier.sendNotification(emailer, tracker, HTML_MESSAGE)
+        if sentSuccess : tracker.updateStates()
     
     time.sleep(1)
 

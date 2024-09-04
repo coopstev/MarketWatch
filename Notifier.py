@@ -100,7 +100,8 @@ class Notifier:
             successfullySent = emailer.send_email(filename, isHTMLmsg)
             if successfullySent:
                 remove(filename)
-            tracker.updateStates()
             self.reset()
+            return True
         else:  # there are no changes to report
             self.lastSentTime = self.currentTime()
+            return False
