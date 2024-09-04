@@ -11,10 +11,13 @@ from ta.momentum import RSIIndicator
 
 TIMEZONE = pytz.timezone('America/New_York')
 
+DAILY = "1d"
+MINUTELY = "1m"
 
 class DataRetriever:
-    def __init__(self, debug=False):
+    def __init__(self, rsiType="1d", debug=False):
         self.last = 50
+        self.rsiType = rsiType
         self.debug = debug
         #self.client = RESTClient(self._getAPIKey())
         return
@@ -39,7 +42,12 @@ class DataRetriever:
 
         # Make sure to use a window with enough data for the RSI calculation.
         if self.debug : timerStart = time.time()
-        tickData = yf.download(tickers=rsiRequest, period='6mo', interval='1d')
+        if self.rsiType == DAILY:
+            tickData = yf.download(tickers=rsiRequest, period='6mo', interval='1d')
+        elif self.rsiType == MINUTELY:
+            tickData = yf.download(tickers=rsiRequest, period='1d', interval='1m')
+        else: # not a valid period
+            raise ValueError(f'"{self.rsiType}" is not a valid period for RSI.')
         if self.debug:
             timerFinish = time.time()
             timeTaken = timerFinish - timerStart
