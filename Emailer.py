@@ -3,7 +3,7 @@ import smtplib
 from email.message import EmailMessage
 from datetime import datetime
 
-DATE = datetime.now().strftime("%d/%m/%Y")
+DATE = datetime.now().strftime("%m/%d/%Y")
 EMAIL_SUBJECT = f"Notification from MarketWatch {DATE}"
 
 class Emailer:
