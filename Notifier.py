@@ -14,7 +14,7 @@ STATE_HEADERS = { RSIState.HARDSELL : "HARD SELL (75 <= RSI)",
                   RSIState.HARDBUY  : "HARD BUY (RSI <= 25)"
                 }
 
-TIME_BETWEEN_NOTIFICATIONS_SECS = 10 * 60  # 10 minutes
+TIME_BETWEEN_NOTIFICATIONS_SECS = 333* 60  # 10 minutes
 
 class Notifier:
     def __init__(self, debug):
