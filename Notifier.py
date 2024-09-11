@@ -1,7 +1,4 @@
-from StateTracker import StateTracker
 from RSIState import RSIState
-from DataRetriever import DataRetriever
-from Emailer import Emailer
 import time
 from os import remove
 
@@ -19,7 +16,6 @@ TIME_BETWEEN_NOTIFICATIONS_SECS = 30 * 60  # 10 minutes
 class Notifier:
     def __init__(self, debug):
         self.debug = debug
-        self.updates = { state : [] for state in RSIState }
         self.lastSentTime = self.currentTime()
 
     def isTimeToSendNotification(self):
@@ -30,26 +26,7 @@ class Notifier:
         return time.time()
     
     def reset(self):
-        #self.notifications = { state : [] for state in RSIState }
-        for state in RSIState:
-            self.updates[state].clear()
         self.lastSentTime = self.currentTime()
-    
-    def getFinalStates(self, tracker : StateTracker):
-        retriever = DataRetriever()
-        volatile = []
-        deltas = tracker.getDeltas()
-        rsis = retriever.getRSI(list(deltas.keys()))
-        for symbol, rsi in rsis:
-            oldState = deltas[symbol]
-            symbolState = RSIState.getState(rsi)
-            if symbolState == oldState:
-                self.updates[oldState].append((symbol, rsi))
-            else: # the state has changed from what the StateTracker had logged
-                if tracker.logChanges([(symbol, symbolState)]): # if this still qualifies as a state change, according to StateTracker
-                    self.updates[symbolState].append((symbol, rsi))
-                else: # this state has no net-change since the last notification; it may be volatile
-                    volatile.append(symbol)
     
     def generateNotification(self, stateToSymbolWithRSI=dict(), notifyNonNeutrals=True, isHTMLmsg=False):
         NEWLINE = "\n<br>" if isHTMLmsg else '\n'
@@ -98,15 +75,7 @@ class Notifier:
         notification.close()
         return filename
     
-    def sendNotification(self, emailer : Emailer, tracker : StateTracker, isHTMLmsg=False):
-        if tracker.existsChange():
-            self.getFinalStates(tracker)
-            filename = self.generateNotification(isHTMLmsg)
-            successfullySent = emailer.send_email(filename, isHTMLmsg)
-            if successfullySent:
-                remove(filename)
-            self.reset()
-            return True
-        else:  # there are no changes to report
-            self.lastSentTime = self.currentTime()
-            return False
+    def deleteNotificationFile(self, filename):
+        remove(filename)
+        return True
+
