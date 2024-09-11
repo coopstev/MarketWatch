@@ -93,6 +93,14 @@ class DataRetriever:
             rsis = self.getRSI(rsiRequest)
             data["RSI"] = [ (symbol, RSIState.getState(rsi)) for (symbol, rsi) in rsis ]
         return data
+    
+    def getDataMultiRequest(self, requests=[]):
+        data={ "RSI" : [] }
+        for request in requests:
+            requestData = self.getData(request)
+            for metric, metricData in requestData.items():
+                data[metric] += metricData
+        return data
         
     def currentTime(self):
         CLOSE = dttime(15, 59)
