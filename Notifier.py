@@ -51,7 +51,7 @@ class Notifier:
                 else: # this state has no net-change since the last notification; it may be volatile
                     volatile.append(symbol)
     
-    def generateNotification(self, isHTMLmsg=False):
+    def generateNotification(self, stateToSymbolWithRSI=dict(), notifyNonNeutrals=True, isHTMLmsg=False):
         NEWLINE = "\n<br>" if isHTMLmsg else '\n'
 
         FONT = 'style="font-family: Consolas, monaco, monospace; font-size: 14px;"'
@@ -82,14 +82,17 @@ class Notifier:
         notification = open(filename, 'w')
         notification.write(HEADER)
         for state in RSIState:
-            if self.updates[state]:
-                notification.write(f"{TEXT_PREFIX}The following stocks have obtained a {STATE_HEADERS[state]} indicator:{TEXT_POSTFIX}{NEWLINE}")
+            if notifyNonNeutrals and state == RSIState.NEUTRAL:
+                continue
+            if stateToSymbolWithRSI[state]:
+                obtained = '' if notifyNonNeutrals else " obtained"
+                notification.write(f"{TEXT_PREFIX}The following stocks have{obtained} a {STATE_HEADERS[state]} indicator:{TEXT_POSTFIX}{NEWLINE}")
                 if isHTMLmsg : notification.write(f'\n<ul class="bullet">\n')
-                for symbol, rsi in self.updates[state]:
+                for symbol, rsi in stateToSymbolWithRSI[state]:
                     notification.write(f"{BULLET_PREFIX}{symbol:5} with an RSI of {rsi:4.2f}{BULLET_POSTFIX}\n")
                 if isHTMLmsg : notification.write(f'</ul>\n')
             else:
-                notification.write(f"{TEXT_PREFIX}No stocks have obtained a {STATE_HEADERS[state]} indicator.{TEXT_POSTFIX}{NEWLINE}")
+                notification.write(f"{TEXT_PREFIX}No stocks have{obtained} a {STATE_HEADERS[state]} indicator.{TEXT_POSTFIX}{NEWLINE}")
             notification.write(f"{NEWLINE}{NEWLINE}")
         notification.write(FOOTER)
         notification.close()
