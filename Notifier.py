@@ -13,6 +13,8 @@ STATE_HEADERS = { RSIState.HARDSELL : "HARD SELL (75 <= RSI)",
 
 TIME_BETWEEN_NOTIFICATIONS_SECS = 30 * 60  # 10 minutes
 
+SOFTWARE_NAME = "StevensSentinel"
+
 class Notifier:
     def __init__(self, debug):
         self.debug = debug
@@ -47,10 +49,10 @@ class Notifier:
         TEXT_POSTFIX = "\n    </p>" if isHTMLmsg else ''
 
         MESSAGE_PREFIX = f'<html>\n  <body>\n        ' if isHTMLmsg else ''
-        HEADER = f"{BULLET_STYLE}{MESSAGE_PREFIX}{TEXT_PREFIX}This is a notification from MarketWatch(c) regarding RSI indicators.{TEXT_POSTFIX}{NEWLINE}{NEWLINE}"
+        HEADER = f"{BULLET_STYLE}{MESSAGE_PREFIX}{TEXT_PREFIX}This is a notification from {SOFTWARE_NAME}(c) regarding RSI indicators.{TEXT_POSTFIX}{NEWLINE}{NEWLINE}"
 
         MESSAGE_POSTFIX = "\n  </body>\n</html>" if isHTMLmsg else ''
-        FOOTER = f"{TEXT_PREFIX}Thank you for using MarketWatch(c)!{NEWLINE}Copyright 2024, Cooper Stevens. All rights reserved.{TEXT_POSTFIX}{MESSAGE_POSTFIX}"
+        FOOTER = f"{TEXT_PREFIX}Thank you for using {SOFTWARE_NAME}(c)!{NEWLINE}Copyright 2024, Cooper Stevens. All rights reserved.{TEXT_POSTFIX}{MESSAGE_POSTFIX}"
 
         BULLET_PREFIX = "<li>" if isHTMLmsg else "    *"
         BULLET_POSTFIX = "</li>" if isHTMLmsg else ''
