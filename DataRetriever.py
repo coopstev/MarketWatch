@@ -90,8 +90,7 @@ class DataRetriever:
         data = {}
         rsiRequest = [ symbol for (symbol, metric) in request if metric == "RSI" ]
         if rsiRequest:
-            rsis = self.getRSI(rsiRequest)
-            data["RSI"] = [ (symbol, RSIState.getState(rsi)) for (symbol, rsi) in rsis ]
+            data["RSI"] = self.getRSI(rsiRequest)
         return data
     
     def getDataMultiRequest(self, requests=[]):

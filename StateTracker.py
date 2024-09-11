@@ -10,10 +10,11 @@ class StateTracker:
     # returns True iff the update represents a net-change in state for a symbol
     def logChanges(self, updates):
         changed = False
-        for symbol, state in updates:
             if self.states[symbol] != state:
                 self.deltas[symbol] = state
                 changed = True
+        for symbol, rsi in updates:
+            state = RSIState.getState(rsi)
             else:
                 if symbol in self.deltas: # returned back to original state
                     self.deltas.pop(symbol)
