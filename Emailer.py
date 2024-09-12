@@ -2,8 +2,10 @@ import smtplib
 #from email.mime.text import MIMEText
 from email.message import EmailMessage
 from datetime import datetime
+import pytz
 
-DATE = datetime.now().strftime("%m/%d/%Y")
+TIMEZONE = pytz.timezone('America/New_York')
+DATE = datetime.now(TIMEZONE).strftime("%m/%d/%Y")
 EMAIL_SUBJECT = f"Notification from StevensSentinel {DATE}"
 
 class Emailer:
