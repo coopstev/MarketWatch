@@ -18,10 +18,19 @@ SOFTWARE_NAME = "StevensSentinel"
 class Notifier:
     def __init__(self, debug):
         self.debug = debug
+        if debug:
+            self.iterationsBetweenMessages = 4
+            self.currentIteration = 0
         self.lastSentTime = self.currentTime()
 
     def isTimeToSendNotification(self):
-        if self.debug : return True
+        if self.debug:
+            self.currentIteration += 1
+            if self.currentIteration == self.iterationsBetweenMessages:
+                self.currentIteration = 0
+                return True
+            else:
+                return False
         return self.currentTime() - self.lastSentTime >= TIME_BETWEEN_NOTIFICATIONS_SECS
         
     def currentTime(self):
