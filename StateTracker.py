@@ -10,16 +10,17 @@ class StateTracker:
     # updates is a list of (str, RSI float) pairs
     def logChanges(self, updates):
         for symbol, rsi in updates:
-            state = RSIState.getState(rsi)
-            if state != self.oldStates[symbol]:  # RSIState of symbol has changed
-                self.changes[symbol] = state
-                if state == RSIState.NEUTRAL:  # changed to NEUTRAL
+            currentState = RSIState.getState(rsi)
+            lastState = self.oldStates[symbol] if symbol not in self.changes else self.changes[symbol]
+            if currentState != lastState:  # RSIState of symbol has changed
+                if currentState == RSIState.NEUTRAL:  # changed to NEUTRAL
                     self.nonNeutral.remove(symbol)
                 else:  # changed to something other than NEUTRAL
-                    self.nonNeutral.add(symbol)
+                    if lastState == RSIState.NEUTRAL : self.nonNeutral.add(symbol)  # newly transitioned to a non-Neutral state
+            if currentState == self.oldStates[symbol]:  # RSIState of symbol has no net change
+                if symbol in self.changes : self.changes.pop(symbol)
             else:
-                if symbol in self.changes: # RSIState of symbol has no net change
-                    self.changes.pop(symbol)
+                self.changes[symbol] = currentState
 
     def existsNotifiable(self):
         return bool(self.nonNeutral) if self.notifyNonNeutrals else bool(self.changes)
