@@ -13,7 +13,7 @@ HTML_MESSAGE = True
 DEBUG = False
 
 ADMIN = ["coopstev012@gmail.com"]
-SUBSCRIBERS = ["rhino9161972@yahoo.com"]
+SUBSCRIBERS = ["rhino9161972@yahoo.com", "Michael.Lehman@ampf.com"]
 
 NOTIFY_NON_NEUTRALS = True
 
