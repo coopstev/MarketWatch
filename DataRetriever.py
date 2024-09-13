@@ -15,6 +15,7 @@ TIMEZONE = pytz.timezone('America/New_York')
 RSI = "RSI"
 PRICE = "PRICE"
 PREVIOUS_DAILY_CLOSE = "regularMarketPreviousClose"
+METRICS = [ RSI, PRICE, PREVIOUS_DAILY_CLOSE ]
 
 DAILY = "1d"
 MINUTELY = "1m"
@@ -254,18 +255,15 @@ class DataRetriever:
         else:
             data[PREVIOUS_DAILY_CLOSE] = []
         
-            data["RSI"] = self.getRSI(rsiRequest)
         return data
     
     def getDataMultiRequest(self, requests=[]):
-        data={ "RSI" : [] }
+        data={ metric : [] for metric in METRICS }
         for request in requests:
             requestData = self.getData(request)
             for metric, metricData in requestData.items():
                 data[metric] += metricData
         return data
-    
-
         
     def currentTime(self):
         OPEN = dttime(9, 31, tzinfo=TIMEZONE)
