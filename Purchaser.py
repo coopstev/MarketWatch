@@ -4,6 +4,7 @@ from DataRetriever import DataRetriever
 import time
 from datetime import datetime, timedelta
 from typing import Dict
+import math
 
 DATE = "DATE"
 BUY_OR_SELL = "BUY-OR-SELL"
@@ -106,7 +107,7 @@ class Purchaser:
         stringSymbolPassed = isinstance(symbols, str)
         if self.useHoldingsDict:
             if stringSymbolPassed : totalHeldDollars = float(np.sum(np.multiply(self.holdingsDict[symbols][QUANTITY], self.holdingsDict[symbols][PRICE])))
-            else : totalHeldDollars = { symbol : float(np.sum(np.multiply(self.holdingsDict[symbols][QUANTITY], self.holdingsDict[symbols][PRICE]))) if symbol in self.holdingsDict else 0.0 for symbol in symbols }
+            else : totalHeldDollars = { symbol : float(np.sum(np.multiply(self.holdingsDict[symbol][QUANTITY], self.holdingsDict[symbol][PRICE]))) if symbol in self.holdingsDict else 0.0 for symbol in symbols }
         else:
             holdings = self.getHoldings('r')
             if stringSymbolPassed:
@@ -183,7 +184,7 @@ class Purchaser:
         if symbol not in self.holdingsDict:
             self.holdingsDict[symbol] = { DATE : [date], QUANTITY : [quantity], PRICE : [price] }
         else: # this symbol already has a holdingsDict entry
-            self.holdingsDict[symbol][DATE].append[date]
+            self.holdingsDict[symbol][DATE].append(date)
             self.holdingsDict[symbol][QUANTITY].append(quantity)
             self.holdingsDict[symbol][PRICE].append(price)
 
