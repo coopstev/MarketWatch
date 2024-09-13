@@ -41,23 +41,26 @@ PURCHASER_ON = True
 DAILY_RSI_MODEL = "1dRSI"
 MINUTELY_RSI_MODEL = "1mRSI"
 PRICE = "PRICE"
+PREVIOUS_DAILY_CLOSE = "regularMarketPreviousClose"
 
 # startup:
 requester = DataRequester("SP500List.txt", [RSI], 120)
 symbols = requester.getAllSymbols()
 retriever = DataRetriever("1d", debug=DEBUG)
+opener = Opener(DEBUG)
 
 if PURCHASER_ON :
-    daily = Purchaser(DAILY_RSI_MODEL, { PRICE : retriever , "1d" : retriever }, True)
-    minutely = Purchaser(MINUTELY_RSI_MODEL, { PRICE : retriever , "1m" : minuteRetriever }, True)
+    previousPricesRequest = requester.formatLargeRequest(symbols, PREVIOUS_DAILY_CLOSE)
+    previousPrices = retriever.getDataMultiRequest(previousPricesRequest, opener.isBeforeOpen())[PREVIOUS_DAILY_CLOSE]
     minuteRetriever = DataRetriever("1m", debug=DEBUG)
+    daily = Purchaser(DAILY_RSI_MODEL, { PRICE : retriever , "1d" : retriever }, True, previousPrices)
+    minutely = Purchaser(MINUTELY_RSI_MODEL, { PRICE : retriever , "1m" : minuteRetriever }, True, previousPrices)
 
 emailer = Emailer(ADMIN if DEBUG else ADMIN + SUBSCRIBERS)
 if PURCHASER_ON : adminEmailer = Emailer(ADMIN)
 notifier = Notifier(DEBUG)
-opener = Opener(DEBUG)
 tracker = StateTracker(symbols, NOTIFY_NON_NEUTRALS)
-if PURCHASER_ON : minuteTracker = StateTracker(symbols)
+#if PURCHASER_ON : minuteTracker = StateTracker(symbols)
 
 # start gui
 
@@ -74,7 +77,7 @@ while isOpen:
     if PURCHASER_ON : minuteData = minuteRetriever.getData(request)
 
     tracker.logChanges(data[RSI])
-    if PURCHASER_ON : minuteTracker.logChanges(minuteData[RSI])
+    #if PURCHASER_ON : minuteTracker.logChanges(minuteData[RSI])
 
     if notifier.isTimeToSendNotification():
         notified = notify(tracker, requester, retriever, notifier, emailer)

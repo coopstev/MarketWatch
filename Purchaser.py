@@ -33,7 +33,7 @@ CROSSOVER_MODEL = "5d/14dcrossover"
 
 class Purchaser:
 
-    def __init__(self, model, retreivers : Dict[str, DataRetriever]={}, useHoldingsDict=True):
+    def __init__(self, model, retreivers : Dict[str, DataRetriever]={}, useHoldingsDict=True, previousPrices:list=[]):
         self.model = model
         self.retreivers = retreivers
         self.ledgerFilename = f"./purchaser/{model}/ledger.csv"
@@ -44,6 +44,7 @@ class Purchaser:
             self.getHoldingsDict()
         self.noncashAssets = self.getNoncashAssets()
         self.newLedgerTransactions = []
+        self.previousPrices = dict(previousPrices)
         self.currentUtilization = self.getUtilizationAtPreviousClose()
         self.maxUtilization = self.currentUtilization
         #self.accountValueAtOpen = self.getAccountValue()
@@ -211,10 +212,13 @@ class Purchaser:
     
     def getPreviousClosePrice(self, symbols=[]):
         if isinstance(symbols, str):
-            return self.retreivers[PRICE].getData([(symbols, PREVIOUS_DAILY_CLOSE)])[PREVIOUS_DAILY_CLOSE][0][1]
+            return self.previousPrices[symbols] if symbols in self.previousPrices else self.retreivers[PRICE].getData([(symbols, PREVIOUS_DAILY_CLOSE)])[PREVIOUS_DAILY_CLOSE][0][1]
         else:
-            priceRequest = [ (symbol, PREVIOUS_DAILY_CLOSE) for symbol in symbols ]
-            return self.retreivers[PRICE].getData(priceRequest)[PREVIOUS_DAILY_CLOSE]
+            priceRequest = [ (symbol, PREVIOUS_DAILY_CLOSE) for symbol in symbols if symbol not in self.previousPrices ]
+            if priceRequest:
+                prices = self.retreivers[PRICE].getData(priceRequest)[PREVIOUS_DAILY_CLOSE]
+                self.previousPrices.update(dict(prices))
+            return [ (symbol, self.previousPrices[symbol]) for symbol in symbols ]
     
     def getTotalCurrentHoldingsValue(self):
         symbolsAndPrices = self.getCurrentPrice(self.noncashAssets)
@@ -370,6 +374,4 @@ class Purchaser:
         #elif self.model == CROSSOVER_MODEL:
         else:
             return False
-
-            
 
