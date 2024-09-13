@@ -1,4 +1,4 @@
-from math import inf
+from math import inf, ceil
 
 class DataRequester:
     def __init__(self, symbols=[], metrics=[], batchSize=inf):
@@ -29,6 +29,15 @@ class DataRequester:
                     self.metricIdx = 0
             i += 1
         return request
+
+    def formatLargeRequest(self, symbols=[], metric="RSI"):
+        largeRequest = [ (symbol, metric) for symbol in symbols ]
+        if len(largeRequest) > self.batchSize:
+            numRequests = ceil(len(largeRequest) / self.batchSize)
+            k, m = divmod(len(largeRequest), numRequests)
+            return [ largeRequest[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(numRequests) ]
+        else:
+            return [ largeRequest ]
     
     def readFromCsv(self, symbols):
         file = open(f"./data/{symbols}", 'r')

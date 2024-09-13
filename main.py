@@ -14,7 +14,28 @@ HTML_MESSAGE = True
 DEBUG = False
 
 ADMIN = ["coopstev012@gmail.com"]
-SUBSCRIBERS = ["rhino9161972@yahoo.com"]
+SUBSCRIBERS = ["rhino9161972@yahoo.com", "Michael.Lehman@ampf.com"]
+
+NOTIFY_NON_NEUTRALS = True
+
+def notify(tracker : StateTracker, requester : DataRequester, retriever : DataRetriever, notifier : Notifier, emailer : Emailer):
+    if tracker.existsNotifiable():
+        notifiables = tracker.getNotifiables()
+
+        requests = requester.formatLargeRequest(notifiables, RSI)
+        data = retriever.getDataMultiRequest(requests)[RSI]
+        
+        tracker.logChanges(data)
+        stateToSymbolWithRSI = tracker.getNotifiablesDict(data)
+
+        filename = notifier.generateNotification(stateToSymbolWithRSI, NOTIFY_NON_NEUTRALS, HTML_MESSAGE)
+        successfullySent = emailer.send_email(filename, HTML_MESSAGE)
+        if successfullySent:
+            notifier.deleteNotificationFile(filename)
+            tracker.commitChanges()
+        return True
+    else:
+        return False
 
 PURCHASER_ON = True
 DAILY_RSI_MODEL = "1dRSI"
@@ -34,10 +55,11 @@ if PURCHASER_ON :
 emailer = Emailer(ADMIN if DEBUG else ADMIN + SUBSCRIBERS)
 notifier = Notifier(DEBUG)
 opener = Opener(DEBUG)
-tracker = StateTracker(symbols)
+tracker = StateTracker(symbols, NOTIFY_NON_NEUTRALS)
 if PURCHASER_ON : minuteTracker = StateTracker(symbols)
 
 # start gui
+
 
 while opener.isBeforeOpen():
     time.sleep(60)
@@ -54,8 +76,8 @@ while isOpen:
     if PURCHASER_ON : minuteTracker.logChanges(minuteData[RSI])
 
     if notifier.isTimeToSendNotification():
-        sentSuccess = notifier.sendNotification(emailer, tracker, HTML_MESSAGE)
-        if sentSuccess : tracker.updateStates()
+        notified = notify(tracker, requester, retriever, notifier, emailer)
+        notifier.reset()
     
     if PURCHASER_ON:
         daily.strategy(requestedSymbols, data[RSI])
@@ -77,6 +99,6 @@ if PURCHASER_ON:
     minutely.saveStatement()
 
 # send an end-of-day notification
-notifier.sendNotification(emailer, tracker, HTML_MESSAGE)
-
+notified = notify(tracker, requester, retriever, notifier, emailer)
+notifier.reset()
 #stop gui
