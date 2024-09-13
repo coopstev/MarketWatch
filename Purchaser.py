@@ -2,9 +2,11 @@ import csv
 import numpy as np
 from DataRetriever import DataRetriever
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Dict
 import math
+# import pytz
+# from datetime import time as dttime
 
 DATE = "DATE"
 BUY_OR_SELL = "BUY-OR-SELL"
@@ -22,7 +24,13 @@ HOLDINGS_FIELDS = [ DATE, SYMBOL, QUANTITY, PRICE ]
 
 CASH = '$'
 
-OPEN_TIME_TODAY = time.mktime(datetime.now().replace(hour=14, minute=30, second=0, microsecond=0).timetuple())
+# TIMEZONE = pytz.timezone('America/New_York')
+# OPEN = dttime(9, 30, tzinfo=TIMEZONE)
+# OPEN_TIME_TODAY = time.mktime(datetime.now().replace(hour=14, minute=30, second=0, microsecond=0).timetuple())
+# NOW = datetime.today()
+# OPEN_TIME_TODAY = datetime.combine(NOW, OPEN, tzinfo=TIMEZONE).timestamp()
+# OPEN = datetime(2024, 9, 13, 15, 9, 30, tzinfo=TIMEZONE).timestamp()
+
 PREVIOUS_DAILY_CLOSE = "regularMarketPreviousClose"
 RSI = "RSI"
 PRICE = "PRICE"
@@ -50,6 +58,7 @@ class Purchaser:
         #self.accountValueAtOpen = self.getAccountValue()
         self.realizedIntradayGains = 0.0
         self.statementSummary = ""
+        self.openTimeToday = 0.0
     
     def getNoncashAssets(self):
         if self.useHoldingsDict:
@@ -259,7 +268,10 @@ class Purchaser:
         return 100 * (gainsToday / self.maxUtilization)
     
     def transactedToday(self, time):
-        return time >= OPEN_TIME_TODAY
+        return time >= self.openTimeToday
+    
+    def setOpenTime(self):
+        self.openTimeToday = time.time()
     
     def getUnrealizedIntradayGains(self):
         unrealizedIntradayGains = 0.0

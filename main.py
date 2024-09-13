@@ -64,9 +64,12 @@ tracker = StateTracker(symbols, NOTIFY_NON_NEUTRALS)
 
 # start gui
 
-
 while opener.isBeforeOpen():
-    time.sleep(60)
+    time.sleep(1)
+
+if PURCHASER_ON:
+    daily.setOpenTime()
+    minutely.setOpenTime()
 
 isOpen = opener.isOpen()
 while isOpen:
