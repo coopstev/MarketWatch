@@ -18,8 +18,9 @@ class DataRequester:
 
     def getRequest(self):
         i = 0
+        request = []
         while i < self.batchSize and i < self.numData:
-            yield (self.symbols[self.symbolIdx], self.metrics[self.metricIdx])
+            request.append((self.symbols[self.symbolIdx], self.metrics[self.metricIdx]))
             self.symbolIdx += 1
             if self.symbolIdx == self.numSymbols:
                 self.symbolIdx = 0
@@ -27,6 +28,7 @@ class DataRequester:
                 if self.metricIdx == self.numMetrics:
                     self.metricIdx = 0
             i += 1
+        return request
     
     def readFromCsv(self, symbols):
         file = open(f"./data/{symbols}", 'r')
