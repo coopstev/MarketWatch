@@ -24,6 +24,9 @@ class Emailer:
         except:
             pass
 
+    def getDate(self):
+        return DATE
+
     def login(self):
         self.mail = smtplib.SMTP(self._SMTP_SERVER, self._SMTP_PORT)
         self.mail.starttls()
@@ -44,12 +47,12 @@ class Emailer:
         file.close()
         return content
     
-    def send_email(self, msgFilePath='', isHTMLmsg=False):
+    def send_email(self, msgFilePath='', isHTMLmsg=False, subject=EMAIL_SUBJECT):
         try:
-            content = self.readTxtFile(msgFilePath)
+            content = self.readTxtFile(msgFilePath) if msgFilePath[-4:] == ".txt" else msgFilePath
             msg = EmailMessage()
             #msg = MIMEText(msg_txt)
-            msg['Subject'] = EMAIL_SUBJECT
+            msg['Subject'] = subject
             msg['From'] = self._SENDER
             msg['To'] = self.recipients
             subtype = 'html' if isHTMLmsg else 'plain'
