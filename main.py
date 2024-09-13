@@ -45,12 +45,12 @@ PRICE = "PRICE"
 # startup:
 requester = DataRequester("SP500List.txt", [RSI], 120)
 symbols = requester.getAllSymbols()
-retriever = DataRetriever("1d", symbols, DEBUG)
+retriever = DataRetriever("1d", debug=DEBUG)
 
 if PURCHASER_ON :
-    minuteRetriever = DataRetriever("1m", symbols, DEBUG)
     daily = Purchaser(DAILY_RSI_MODEL, { PRICE : retriever , "1d" : retriever }, True)
     minutely = Purchaser(MINUTELY_RSI_MODEL, { PRICE : retriever , "1m" : minuteRetriever }, True)
+    minuteRetriever = DataRetriever("1m", debug=DEBUG)
 
 emailer = Emailer(ADMIN if DEBUG else ADMIN + SUBSCRIBERS)
 if PURCHASER_ON : adminEmailer = Emailer(ADMIN)
@@ -82,7 +82,7 @@ while isOpen:
     
     if PURCHASER_ON:
         priceRequest = requester.formatRequest(requestedSymbols, PRICE)
-        prices = retriever.getData([])
+        prices = retriever.getData(priceRequest)
         daily.strategy(requestedSymbols, data[RSI], optionalPrices=prices[PRICE])
         minutely.strategy(requestedSymbols, minuteData[RSI], optionalPrices=prices[PRICE])
 

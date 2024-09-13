@@ -7,8 +7,8 @@ import time
 import pytz
 import yfinance as yf
 from ta.momentum import RSIIndicator
-import requests_cache
-#import math
+#import requests_cache
+import math
 
 TIMEZONE = pytz.timezone('America/New_York')
 
@@ -150,21 +150,23 @@ class DataRetriever:
         numSymbols = len(priceRequest)
 
         USE_TICKER = True
-        if not self.storeTickers and USE_TICKER:
-            if self.debug : timerStart = time.time()
-            tickers = self.getTickers(priceRequest)
-            #tickData = yf.download(tickers=priceRequest, period='1d', interval='1m', session=self.session)
-            if self.debug:
-                timerFinish = time.time()
-                timeTaken = timerFinish - timerStart
-                print(f"Average download time PER SYMBOL for {numSymbols}-batch: {timeTaken / numSymbols}")
-            return [ (symbol, tickers[symbol].fast_info.last_price) for symbol in priceRequest ]
-        elif USE_TICKER:
+        if USE_TICKER:
             symbolPrices = []
             retry = []
             tickers = yf.download(tickers=priceRequest, period='1d', interval='1m')
             tickData = tickers['Close']
-            return [ (symbol, tickData[symbol].iloc[-1]) for symbol in priceRequest ]
+            for symbol in priceRequest:
+                idx = -1
+                price = tickData[symbol].iloc[idx]
+                while math.isnan(price):
+                    idx -= 1
+                    price = tickData[symbol].iloc[idx]
+                symbolPrices.append((symbol, price))
+            # tickers = yf.download(tickers=retry, period='1d', interval='1m')
+            # tickData = tickers['Close']
+            # for symbol in retry:
+            #     symbolPrices.append((symbol, tickData[symbol].iloc[-1]))
+            return symbolPrices
             for symbol in priceRequest:
                 try:
                     #price = self.tickers[symbol].info["currentPrice"]
@@ -191,26 +193,17 @@ class DataRetriever:
             closeValues = tickData['Close']
             return [ (symbol, closeValues[symbol][-1]) for symbol in priceRequest ]
 
-    def getPreviousDailyClose(self, priceRequest=None):
+    def getPreviousDailyClose(self, priceRequest=None, isBeforeOpen=False):
         numSymbols = len(priceRequest)
 
-        USE_TICKERS = True
-        if not self.storeTickers and USE_TICKERS:
-            if self.debug : timerStart = time.time()
-            tickers = self.getTickers(priceRequest)
-            #tickData = yf.download(tickers=priceRequest, period='1d', interval='1m', session=self.session)
-            if self.debug:
-                timerFinish = time.time()
-                timeTaken = timerFinish - timerStart
-                print(f"Average download time PER SYMBOL for {numSymbols}-batch: {timeTaken / numSymbols}")
-            return [ (symbol, tickers[symbol].info[PREVIOUS_DAILY_CLOSE]) for symbol in priceRequest ]
-        elif USE_TICKERS:
+        USE_TICKERS = False
+        if USE_TICKERS:
             symbolPrices = []
             retry = []
             for symbol in priceRequest:
                 try:
                     #price = self.tickers[symbol].info[PREVIOUS_DAILY_CLOSE]
-                    price = self.tickers[symbol].history(period='1d')['Close'].iloc[-2]
+                    price = self.tickers[symbol].history(period='5d')['Close'].iloc[-2]
                     symbolPrices.append((symbol, price))
                 except:
                     retry.append(symbol)
@@ -222,19 +215,18 @@ class DataRetriever:
                         symbolPrices.append((symbol, float('nan')))
             return symbolPrices
         else:
-            # Define the date range
-            end_time = self.currentTime().date()
-            start_time = end_time - timedelta(days=2)
-
-            tickData = yf.download(tickers=priceRequest, start=start_time, end=end_time, interval='1d', session=self.session)
-            closeValues = tickData['Close']
-            return [ (symbol, closeValues[symbol][-2]) for symbol in priceRequest ]
+            if isBeforeOpen:
+                return self.getCurrentPrice(priceRequest)
+            else:
+                tickData = yf.download(tickers=priceRequest, period='5d', interval='1d')
+                closeValues = tickData['Close']
+                return [ (symbol, closeValues[symbol][-2]) for symbol in priceRequest ]
 
     # https://polygon.io/docs/stocks/get_v1_indicators_rsi__stockticker
     # https://github.com/polygon-io/client-python/blob/master/polygon/rest/indicators.py
     # Returns a dictionary where each requested metric is a key and the associated value is a
     # List of (symbol Str, metric of symbol) pairs
-    def getData(self, request):
+    def getData(self, request, isBeforeOpen=False):
         data = {}
         
         rsiRequest = [ symbol for (symbol, metric) in request if metric == RSI ]
@@ -251,16 +243,16 @@ class DataRetriever:
         
         prevClosePriceRequest = [ symbol for (symbol, metric) in request if metric == PREVIOUS_DAILY_CLOSE ]
         if prevClosePriceRequest:
-            data[PREVIOUS_DAILY_CLOSE] = self.getPreviousDailyClose(prevClosePriceRequest)
+            data[PREVIOUS_DAILY_CLOSE] = self.getPreviousDailyClose(prevClosePriceRequest, isBeforeOpen)
         else:
             data[PREVIOUS_DAILY_CLOSE] = []
         
         return data
     
-    def getDataMultiRequest(self, requests=[]):
+    def getDataMultiRequest(self, requests=[], isBeforeOpen=False):
         data={ metric : [] for metric in METRICS }
         for request in requests:
-            requestData = self.getData(request)
+            requestData = self.getData(request, isBeforeOpen)
             for metric, metricData in requestData.items():
                 data[metric] += metricData
         return data
@@ -270,7 +262,7 @@ class DataRetriever:
         MIDDAY = dttime(12, 35, tzinfo=TIMEZONE)
         CLOSE = dttime(15, 59, tzinfo=TIMEZONE)
         current = datetime.now(TIMEZONE)
-        if current.time() >= OPEN and current.time() <= CLOSE:
+        if not self.debug or (current.time() >= OPEN and current.time() <= CLOSE):
             return current
         else:
             return datetime.combine(current, MIDDAY)

@@ -262,6 +262,11 @@ class Purchaser:
         symbolsWithPrices = self.getCurrentPrice(self.noncashAssets)
         symbolToPreviousClosePrice = dict(self.getPreviousClosePrice(self.noncashAssets))
         for symbol, currentPrice in symbolsWithPrices:
+            if math.isnan(currentPrice):
+                currentPrice = self.getCurrentPrice(symbol)
+                if math.isnan(currentPrice):
+                    currentPrice = self.getPreviousClosePrice(symbol)
+                    print(f"Was unable to obtain a current price for {symbol} at {time.ctime(time.time())}; forced to use previous daily close of {'${:,.2f}'.format(currentPrice)}/share.")
             for i in range(len(self.holdingsDict[symbol][QUANTITY])):
                 if self.transactedToday(self.holdingsDict[symbol][DATE][i]):
                     unrealizedIntradayGains += self.holdingsDict[symbol][QUANTITY][i] * (currentPrice - self.holdingsDict[symbol][PRICE][i])
