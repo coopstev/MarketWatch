@@ -2,7 +2,7 @@ import csv
 import numpy as np
 from DataRetriever import DataRetriever
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict
 
 DATE = "DATE"
@@ -187,17 +187,19 @@ class Purchaser:
             self.holdingsDict[symbol][QUANTITY].append(quantity)
             self.holdingsDict[symbol][PRICE].append(price)
 
-    def saveStatement(self):
+    def saveStatement(self, date=''):
         statements = open(self.statementsFilename, 'a')
-        dateString = datetime.now().strftime("%m/%d/%Y")
-        statements.write(f"\n\n######################{dateString}######################\n")
+        statements.write(f"\n\n-----------------------------{date}-----------------------------\n")
         gainAmountPercent = self.getInvestmentsValuePercentageChangeToday()
         gainAmountDollars = gainAmountPercent / 100 * self.maxUtilization
         gainOrLoss = "gain" if gainAmountPercent >= 0 else "loss"
-        statements.write(f"Account experienced a {gainOrLoss} today of {gainAmountPercent}% ({'${:,.2f}'.format(gainAmountDollars)}) with a maximum fund utilization of {'${:,.2f}'.format(self.maxUtilization)}.\n")
-        statements.write(f"Current account value is {'${:,.2f}'.format(self.getAccountValue())}.\n\n")
+        gainString = f"Account experienced a {gainOrLoss} today of {'{:,.2f}'.format(gainAmountPercent)}% ({'${:,.2f}'.format(gainAmountDollars)}) with a maximum fund utilization of {'${:,.2f}'.format(self.maxUtilization)}.\n"
+        statements.write(gainString)
+        transactionsString = f"Current account value is {'${:,.2f}'.format(self.getAccountValue())}.\n\n"
+        statements.write(transactionsString)
         statements.write(self.statementSummary)
         statements.close()
+        return gainString + transactionsString + self.statementSummary
     
     def getCurrentPrice(self, symbols=[]):
         if isinstance(symbols, str):
@@ -272,6 +274,7 @@ class Purchaser:
         currentTime = time.time()
         quantity = dollarAmount / price
         if self.spend(dollarAmount):
+            self.statementSummary += f"{'{:,.2f}'.format(quantity)} shares of {symbol} bought on {time.ctime(currentTime)} at a price of {'${:,.2f}'.format(price)}/share ({'${:,.2f}'.format(dollarAmount)} worth).\n"
             self.newLedgerTransactions.append((currentTime, BUY, symbol, quantity, price, NA, NA))
             self.noncashAssets.add(symbol)
             self.addLotToHoldingsDict(currentTime, symbol, quantity, price)
@@ -295,7 +298,7 @@ class Purchaser:
                 datePurchased = self.holdingsDict[symbol][DATE][0]
                 heldTime = currentTime - datePurchased
 
-                self.statementSummary +=f"{amountToSellFromLot} shares of {symbol} held for {heldTime}s and sold on {time.ctime(currentTime)} at {price} for a net of {net}.\n"
+                self.statementSummary += f"{amountToSellFromLot} shares of {symbol} held for {str(timedelta(int(heldTime)))} and sold on {time.ctime(currentTime)} at a price of {'${:,.2f}'.format(price)}/share ({'${:,.2f}'.format(amountToSellFromLot * price)} worth) for a net of {'-' if net < 0 else ''}{'${:,.2f}'.format(abs(net))}.\n"
                 self.newLedgerTransactions.append((currentTime, SELL, symbol, amountToSellFromLot, price, net, heldTime))
 
                 self.holdingsDict[symbol][QUANTITY][0] -= amountToSellFromLot
