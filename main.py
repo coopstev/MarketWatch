@@ -53,6 +53,7 @@ if PURCHASER_ON :
     minutely = Purchaser(MINUTELY_RSI_MODEL, { PRICE : retriever , "1m" : minuteRetriever }, True)
 
 emailer = Emailer(ADMIN if DEBUG else ADMIN + SUBSCRIBERS)
+if PURCHASER_ON : adminEmailer = Emailer(ADMIN)
 notifier = Notifier(DEBUG)
 opener = Opener(DEBUG)
 tracker = StateTracker(symbols, NOTIFY_NON_NEUTRALS)
@@ -80,8 +81,10 @@ while isOpen:
         notifier.reset()
     
     if PURCHASER_ON:
-        daily.strategy(requestedSymbols, data[RSI])
-        minutely.strategy(requestedSymbols, minuteData[RSI])
+        priceRequest = requester.formatRequest(requestedSymbols, PRICE)
+        prices = retriever.getData([])
+        daily.strategy(requestedSymbols, data[RSI], optionalPrices=prices[PRICE])
+        minutely.strategy(requestedSymbols, minuteData[RSI], optionalPrices=prices[PRICE])
 
     time.sleep(1)
     isOpen = opener.isOpen()
@@ -90,13 +93,17 @@ while isOpen:
 # now the market is closed
 
 if PURCHASER_ON:
+    DATE = adminEmailer.getDate()
     daily.overwriteHoldings()
+    #daily.getHoldingsString()
     daily.writeNewTransactionsToLedger()
-    daily.saveStatement()
+    dailyStatementString = daily.saveStatement(DATE)
+    sent = adminEmailer.send_email(dailyStatementString, False, f'Purchaser Activity for {DAILY_RSI_MODEL} Model {DATE}')
 
     minutely.overwriteHoldings()
     minutely.writeNewTransactionsToLedger()
-    minutely.saveStatement()
+    minutelyStatementString = minutely.saveStatement(DATE)
+    sent = adminEmailer.send_email(minutelyStatementString, False, f'Purchaser Activity for {MINUTELY_RSI_MODEL} Model {DATE}')
 
 # send an end-of-day notification
 notified = notify(tracker, requester, retriever, notifier, emailer)
