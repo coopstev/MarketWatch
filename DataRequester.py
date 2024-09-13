@@ -30,6 +30,9 @@ class DataRequester:
             i += 1
         return request
 
+    def formatRequest(self, symbols=[], metric="RSI"):
+        return [ (symbol, metric) for symbol in symbols ]
+
     def formatLargeRequest(self, symbols=[], metric="RSI"):
         largeRequest = [ (symbol, metric) for symbol in symbols ]
         if len(largeRequest) > self.batchSize:
