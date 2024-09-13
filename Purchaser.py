@@ -301,8 +301,8 @@ class Purchaser:
                 self.holdingsDict[symbol][QUANTITY][0] -= amountToSellFromLot
                 numSharesToSell -= amountToSellFromLot
                 self.earn(amountToSellFromLot * price)
-                if self.transactedToday(self.holdingsDict[symbol][DATE][0]):
-                    self.realizedIntradayGains += amountToSellFromLot * (price - self.holdingsDict[symbol][PRICE][0])
+                if self.transactedToday(datePurchased):
+                    self.realizedIntradayGains += net
                 else: # was transacted some day previous, so we will use previous daily close price
                     if previousClosePrice is None : previousClosePrice = self.getPreviousClosePrice(symbol)
                     self.realizedIntradayGains += amountToSellFromLot * (price - previousClosePrice)
