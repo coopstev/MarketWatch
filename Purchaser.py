@@ -320,11 +320,20 @@ class Purchaser:
             print(f"Currently-held {quantityCurrentlyHeld} shares of {symbol} are insufficent to sell {numShares} shares.")
             return False
         
-    def strategy(self, symbols=[], optionalData1=[], optionalData2=[]):
+    def strategy(self, symbols=[], optionalData1=[], optionalData2=[], optionalPrices:list=[]):
         if isinstance(symbols, str):
             symbols = [ symbols ]
         symbolToDollarsInvested = self.getQuantityInvestedInDollars(symbols)
-        symbolToCurrentPrice = dict(self.getCurrentPrice(symbols))
+        if optionalPrices : symbolToCurrentPrice = dict(optionalPrices)
+        if not optionalPrices:
+            optionalPrices += self.getCurrentPrice(symbols)
+            symbolToCurrentPrice = dict(optionalPrices)
+        elif len(optionalPrices) < len(symbols):
+            providedPrices = [symbol for symbol, price in optionalPrices ]
+            notProvided = [ symbol for symbol in symbols if symbol not in providedPrices ]
+            newPrices = self.getCurrentPrice(notProvided)
+            optionalPrices += newPrices
+            symbolToCurrentPrice.update(newPrices)
         purchaseOrSaleMade = False
         if self.model == DAILY_RSI_MODEL or self.model == MINUTELY_RSI_MODEL:
             buyThreshold = 30
@@ -337,6 +346,11 @@ class Purchaser:
                 notProvided = [ symbol for symbol in symbols if symbol not in providedData ]
                 optionalData1 = optionalData1 + self.retreivers[self.model[:2]].getRSI(notProvided)
             for symbol, rsi in optionalData1:
+                if math.isnan(rsi):
+                    rsi = self.getCurrentPrice(rsi)
+                    if math.isnan(rsi):
+                        print(f"Could not obtain a current price for {symbol}.")
+                        continue
                 if rsi <= buyThreshold and symbolToDollarsInvested[symbol] < buyAmountInDollars:
                     bought = self.buy(symbol, buyAmountInDollars - symbolToDollarsInvested[symbol], symbolToCurrentPrice[symbol])
                     purchaseOrSaleMade |= bought
