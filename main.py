@@ -15,6 +15,7 @@ DEBUG = False
 
 ADMIN = ["coopstev012@gmail.com"]
 SUBSCRIBERS = ["rhino9161972@yahoo.com", "Michael.Lehman@ampf.com"]
+PURCHASER_SUBSCRIBERS = ["rhino9161972@yahoo.com"]
 
 NOTIFY_NON_NEUTRALS = True
 
@@ -57,7 +58,7 @@ if PURCHASER_ON :
     minutely = Purchaser(MINUTELY_RSI_MODEL, { PRICE : retriever , "1m" : minuteRetriever }, True, previousPrices)
 
 emailer = Emailer(ADMIN if DEBUG else ADMIN + SUBSCRIBERS)
-if PURCHASER_ON : adminEmailer = Emailer(ADMIN)
+if PURCHASER_ON : adminEmailer = Emailer(ADMIN if DEBUG else ADMIN + PURCHASER_SUBSCRIBERS)
 notifier = Notifier(DEBUG)
 tracker = StateTracker(symbols, NOTIFY_NON_NEUTRALS)
 #if PURCHASER_ON : minuteTracker = StateTracker(symbols)
@@ -72,6 +73,7 @@ if PURCHASER_ON:
     minutely.setOpenTime()
 
 isOpen = opener.isOpen()
+wasOpen = isOpen
 while isOpen:
     request = requester.getRequest()
     requestedSymbols = [ symbol for symbol, metric in request ]
@@ -98,7 +100,7 @@ while isOpen:
 
 # now the market is closed
 
-if PURCHASER_ON:
+if (PURCHASER_ON and wasOpen) or DEBUG:
     DATE = adminEmailer.getDate()
     daily.overwriteHoldings()
     #daily.getHoldingsString()
@@ -111,7 +113,8 @@ if PURCHASER_ON:
     minutelyStatementString = minutely.saveStatement(DATE)
     sent = adminEmailer.send_email(minutelyStatementString, False, f'Purchaser Activity for {MINUTELY_RSI_MODEL} Model {DATE}')
 
-# send an end-of-day notification
-notified = notify(tracker, requester, retriever, notifier, emailer)
-notifier.reset()
+if wasOpen or DEBUG:  # send an end-of-day notification
+    notified = notify(tracker, requester, retriever, notifier, emailer)
+    notifier.reset()
+
 #stop gui
