@@ -320,7 +320,7 @@ class Purchaser:
                 datePurchased = self.holdingsDict[symbol][DATE][0]
                 heldTime = currentTime - datePurchased
 
-                self.statementSummary += f"{amountToSellFromLot} shares of {symbol} held for {str(timedelta(int(heldTime)))} and sold on {time.ctime(currentTime)} at a price of {'${:,.2f}'.format(price)}/share ({'${:,.2f}'.format(amountToSellFromLot * price)} worth) for a net of {'-' if net < 0 else ''}{'${:,.2f}'.format(abs(net))}.\n"
+                self.statementSummary += f"{amountToSellFromLot} shares of {symbol} held for {str(timedelta(seconds=heldTime))} and sold on {time.ctime(currentTime)} at a price of {'${:,.2f}'.format(price)}/share ({'${:,.2f}'.format(amountToSellFromLot * price)} worth) for a net of {'-' if net < 0 else ''}{'${:,.2f}'.format(abs(net))}.\n"
                 self.newLedgerTransactions.append((currentTime, SELL, symbol, amountToSellFromLot, price, net, heldTime))
 
                 self.holdingsDict[symbol][QUANTITY][0] -= amountToSellFromLot
