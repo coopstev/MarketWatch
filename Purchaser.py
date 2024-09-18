@@ -221,9 +221,16 @@ class Purchaser:
     
     def getPreviousClosePrice(self, symbols=[]):
         if isinstance(symbols, str):
-            return self.previousPrices[symbols] if symbols in self.previousPrices else self.retreivers[PRICE].getData([(symbols, PREVIOUS_DAILY_CLOSE)])[PREVIOUS_DAILY_CLOSE][0][1]
+            if symbols in self.previousPrices:
+                if math.isnan(self.previousPrices[symbols]) : self.previousPrices[symbols] = self.retreivers[PRICE].getData([(symbols, PREVIOUS_DAILY_CLOSE)])[PREVIOUS_DAILY_CLOSE][0][1]
+                return self.previousPrices[symbols]
+            else:
+                price = self.retreivers[PRICE].getData([(symbols, PREVIOUS_DAILY_CLOSE)])[PREVIOUS_DAILY_CLOSE][0][1]
+                if math.isnan(price) : price = self.retreivers[PRICE].getData([(symbols, PREVIOUS_DAILY_CLOSE)])[PREVIOUS_DAILY_CLOSE][0][1]
+                self.previousPrices[symbols] = price
+                return price
         else:
-            priceRequest = [ (symbol, PREVIOUS_DAILY_CLOSE) for symbol in symbols if symbol not in self.previousPrices ]
+            priceRequest = [ (symbol, PREVIOUS_DAILY_CLOSE) for symbol in symbols if symbol not in self.previousPrices or math.isnan(self.previousPrices[symbol]) ]
             if priceRequest:
                 prices = self.retreivers[PRICE].getData(priceRequest)[PREVIOUS_DAILY_CLOSE]
                 self.previousPrices.update(dict(prices))
