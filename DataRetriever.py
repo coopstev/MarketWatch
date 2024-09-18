@@ -181,16 +181,18 @@ class DataRetriever:
                 if math.isnan(price) : retry.append(symbol)
                 else : symbolPrices.append((symbol, price))
             if retry:
+                if len(retry) == 1 : return symbolPrices + self.getCurrentPrice(retry)
                 tickers = yf.download(tickers=retry, period='1d', interval='1m')
                 tickData = tickers['Close']
                 for symbol in retry:
                     idx = -1
-                    price = tickData[symbol].iloc[idx]
-                    while math.isnan(price) and -idx < tickData.shape[1]:
-                        idx -= 1
+                    if tickData.shape[1] > 0:
                         price = tickData[symbol].iloc[idx]
-                    symbolPrices.append((symbol, price))
-                    # symbolPrices.append((symbol, tickData[symbol].iloc[-1]))
+                        while math.isnan(price) and -idx < tickData.shape[1]:
+                            idx -= 1
+                            price = tickData[symbol].iloc[idx]
+                        symbolPrices.append((symbol, price))
+                    else : symbolPrices.append((symbol, float("nan")))
             return symbolPrices
             for symbol in priceRequest:
                 try:
@@ -243,9 +245,33 @@ class DataRetriever:
             if isBeforeOpen:
                 return self.getCurrentPrice(priceRequest)
             else:
+                if numSymbols == 1:
+                    symbol = priceRequest[0]
+                    ticker = yf.download(tickers=symbol, period='5d', interval='1d')
+                    tickData = ticker['Close']
+                    price = tickData.iloc[-2]
+                    if math.isnan(price):
+                        ticker = yf.download(tickers=symbol, period='5d', interval='1d')
+                        tickData = ticker['Close']
+                        price = tickData.iloc[-2]
+                    return [ (symbol, price) ]
                 tickData = yf.download(tickers=priceRequest, period='5d', interval='1d')
                 closeValues = tickData['Close']
-                return [ (symbol, closeValues[symbol].iloc[-2]) for symbol in priceRequest ]
+                symbolPrices = []
+                retry = []
+                for symbol in symbols:
+                    price = closeValues[symbol].iloc[-2]
+                    if math.isnan(price):
+                        retry.append(symbol)
+                    else:
+                        symbolPrices.append((symbol, price))
+                if retry:
+                    if len(retry) == 1 : return symbolPrices + self.getPreviousDailyClose(retry, isBeforeOpen)
+                    tickData = yf.download(tickers=retry, period='5d', interval='1d')
+                    closeValues = tickData['Close']
+                    for symbol in retry:
+                        symbolPrices.append((symbol, closeValues[symbol].iloc[-2]))
+                return symbolPrices
 
     # https://polygon.io/docs/stocks/get_v1_indicators_rsi__stockticker
     # https://github.com/polygon-io/client-python/blob/master/polygon/rest/indicators.py
