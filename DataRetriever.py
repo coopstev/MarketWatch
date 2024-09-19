@@ -259,7 +259,7 @@ class DataRetriever:
                 closeValues = tickData['Close']
                 symbolPrices = []
                 retry = []
-                for symbol in symbols:
+                for symbol in priceRequest:
                     price = closeValues[symbol].iloc[-2]
                     if math.isnan(price):
                         retry.append(symbol)
