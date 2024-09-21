@@ -76,7 +76,7 @@ isOpen = opener.isOpen()
 wasOpen = isOpen
 while isOpen:
     request = requester.getRequest()
-    requestedSymbols = [ symbol for symbol, metric in request ]
+    requestedSymbols = [ pair[0] for pair in request ]
 
     data = retriever.getData(request)
     if PURCHASER_ON : minuteData = minuteRetriever.getData(request)
