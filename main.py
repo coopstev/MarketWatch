@@ -65,12 +65,19 @@ tracker = StateTracker(symbols, NOTIFY_NON_NEUTRALS)
 
 # start gui
 
+startedBeforeOpen = False
 while opener.isBeforeOpen():
+    startedBeforeOpen = True
     time.sleep(1)
 
 if PURCHASER_ON:
     daily.setOpenTime()
     minutely.setOpenTime()
+
+if startedBeforeOpen:
+    print("Started before open, but now open. Entering isOpen() loop now.")
+else:
+    print("Started while open. Entering isOpen() loop now.")
 
 isOpen = opener.isOpen()
 wasOpen = isOpen
