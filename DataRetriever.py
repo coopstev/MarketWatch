@@ -256,18 +256,18 @@ class DataRetriever:
                     symbol = priceRequest[0]
                     ticker = yf.download(tickers=symbol, period='5d', interval='1d')
                     tickData = ticker['Close']
-                    price = tickData.iloc[-2]
+                    price = tickData.iloc[-2] if tickData.shape[0] >= 2 else float("nan")
                     if math.isnan(price):
                         ticker = yf.download(tickers=symbol, period='5d', interval='1d')
                         tickData = ticker['Close']
-                        price = tickData.iloc[-2]
+                        price = tickData.iloc[-2] if tickData.shape[0] >= 2 else float("nan")
                     return [ (symbol, price) ]
                 tickData = yf.download(tickers=priceRequest, period='5d', interval='1d')
                 closeValues = tickData['Close']
                 symbolPrices = []
                 retry = []
                 for symbol in priceRequest:
-                    price = closeValues[symbol].iloc[-2]
+                    price = closeValues[symbol].iloc[-2] if closeValues.shape[0] >= 2 else float("nan")
                     if math.isnan(price):
                         retry.append(symbol)
                     else:
@@ -277,7 +277,7 @@ class DataRetriever:
                     tickData = yf.download(tickers=retry, period='5d', interval='1d')
                     closeValues = tickData['Close']
                     for symbol in retry:
-                        symbolPrices.append((symbol, closeValues[symbol].iloc[-2]))
+                        symbolPrices.append((symbol, closeValues[symbol].iloc[-2] if closeValues.shape[0] >= 2 else float("nan")))
                 return symbolPrices
 
     # https://polygon.io/docs/stocks/get_v1_indicators_rsi__stockticker
