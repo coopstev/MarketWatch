@@ -380,7 +380,7 @@ class Purchaser:
                 optionalData1 = optionalData1 + self.retreivers[self.model[:2]].getRSI(notProvided)
             for symbol, rsi in optionalData1:
                 if math.isnan(rsi):
-                    rsi = self.getCurrentPrice(rsi)
+                    rsi = self.getCurrentPrice(symbol)
                     if math.isnan(rsi):
                         print(f"Could not obtain a current price for {symbol}.")
                         continue
