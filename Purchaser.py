@@ -201,17 +201,31 @@ class Purchaser:
     def saveStatement(self, date=''):
         statements = open(self.statementsFilename, 'a')
         statements.write(f"\n\n-----------------------------{date}-----------------------------\n")
+
         gainAmountPercent = self.getInvestmentsValuePercentageChangeToday()
         gainAmountDollars = gainAmountPercent / 100 * self.maxUtilization
         gainOrLoss = "gain" if gainAmountPercent >= 0 else "loss"
         gainString = f"Account experienced a {gainOrLoss} today of {'{:,.2f}'.format(gainAmountPercent)}% ({'${:,.2f}'.format(gainAmountDollars)}) with a maximum fund utilization of {'${:,.2f}'.format(self.maxUtilization)}.\n"
         statements.write(gainString)
-        transactionsString = f"Current account value is {'${:,.2f}'.format(self.getAccountValue())}.\n\n"
-        statements.write(transactionsString)
+
+        valueString = f"Current account value is {'${:,.2f}'.format(self.getAccountValue())}.\n\n"
+        statements.write(valueString)
+
+        holdingsString = self.getHoldingsString()
+        statements.write(holdingsString)
+
         statements.write(self.statementSummary)
+
         statements.close()
-        return gainString + transactionsString + self.statementSummary
+        return gainString + valueString + holdingsString + self.statementSummary
     
+    def getHoldingsString(self):
+        holdingsString = f"The {self.model} model currently has {'${:,.2f}'.format(self.getLiquidCash())} cash available in liquid.\nThe current holdings for this model are as follows:\n\n"
+        for symbol in self.noncashAssets:
+            for date, quantity, price in zip(self.holdingsDict[symbol][DATE], self.holdingsDict[symbol][QUANTITY], self.holdingsDict[symbol][PRICE]):
+                holdingsString += f"* {'{:,.2f}'.format(quantity)} shares of {symbol} purchased on {time.ctime(date)} at {'${:,.2f}'.format(price)}/share ({'${:,.2f}'.format(quantity * price)} worth).\n"
+        return holdingsString + "\n\n"
+
     def getCurrentPrice(self, symbols=[]):
         if isinstance(symbols, str):
             return self.retreivers[PRICE].getData([(symbols, PRICE)])[PRICE][0][1]

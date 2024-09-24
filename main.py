@@ -110,7 +110,6 @@ while isOpen:
 if (PURCHASER_ON and wasOpen) or DEBUG:
     DATE = adminEmailer.getDate()
     daily.overwriteHoldings()
-    #daily.getHoldingsString()
     daily.writeNewTransactionsToLedger()
     dailyStatementString = daily.saveStatement(DATE)
     sent = adminEmailer.send_email(dailyStatementString, False, f'Purchaser Activity for {DAILY_RSI_MODEL} Model {DATE}')
