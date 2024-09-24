@@ -58,7 +58,7 @@ class Purchaser:
         #self.accountValueAtOpen = self.getAccountValue()
         self.realizedIntradayGains = 0.0
         self.statementSummary = ""
-        self.openTimeToday = 0.0
+        self.openTimeToday = time.time()
     
     def getNoncashAssets(self):
         if self.useHoldingsDict:
