@@ -50,6 +50,9 @@ symbols = requester.getAllSymbols()
 retriever = DataRetriever("1d", debug=DEBUG)
 opener = Opener(DEBUG)
 
+afterClose = opener.isAfterClose()
+if afterClose : quit()
+
 if PURCHASER_ON :
     previousPricesRequest = requester.formatLargeRequest(symbols, PREVIOUS_DAILY_CLOSE)
     previousPrices = retriever.getDataMultiRequest(previousPricesRequest, opener.isBeforeOpen())[PREVIOUS_DAILY_CLOSE]

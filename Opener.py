@@ -20,6 +20,11 @@ class Opener:
         if self.debug : return False
         current = datetime.now(TIMEZONE).time()
         return current < OPEN and self.isWeekday()
+    
+    def isAfterClose(self):
+        if self.debug : return False
+        current = datetime.now(TIMEZONE).time()
+        return current > CLOSE or not self.isWeekday()
 
     def isWeekday(self):
         dayOfWeek = datetime.today().weekday()
