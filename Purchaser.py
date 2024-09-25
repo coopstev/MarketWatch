@@ -37,6 +37,7 @@ PRICE = "PRICE"
 
 DAILY_RSI_MODEL = "1dRSI"
 MINUTELY_RSI_MODEL = "1mRSI"
+MINUTELY_RSI_ONLY_SELL_GAINS_MODEL = MINUTELY_RSI_MODEL + '+'
 CROSSOVER_MODEL = "5d/14dcrossover"
 
 class Purchaser:
@@ -371,6 +372,7 @@ class Purchaser:
         if isinstance(symbols, str):
             symbols = [ symbols ]
         symbolToDollarsInvested = self.getQuantityInvestedInDollars(symbols)
+        #symbolToSharesHeld = self.getQuantitySharesHeld(symbols)
         if optionalPrices : symbolToCurrentPrice = dict(optionalPrices)
         if not optionalPrices:
             optionalPrices += self.getCurrentPrice(symbols)
@@ -382,7 +384,7 @@ class Purchaser:
             optionalPrices += newPrices
             symbolToCurrentPrice.update(newPrices)
         purchaseOrSaleMade = False
-        if self.model == DAILY_RSI_MODEL or self.model == MINUTELY_RSI_MODEL:
+        if self.model in [ DAILY_RSI_MODEL, MINUTELY_RSI_MODEL, MINUTELY_RSI_ONLY_SELL_GAINS_MODEL ]:
             buyThreshold = 30
             sellThreshold = 70
             buyAmountInDollars = 10000
@@ -401,11 +403,10 @@ class Purchaser:
                 if rsi <= buyThreshold and symbolToDollarsInvested[symbol] < buyAmountInDollars:
                     bought = self.buy(symbol, buyAmountInDollars - symbolToDollarsInvested[symbol], symbolToCurrentPrice[symbol])
                     purchaseOrSaleMade |= bought
-                elif rsi >= sellThreshold and symbolToDollarsInvested[symbol] > 0:
+                elif rsi >= sellThreshold and symbolToDollarsInvested[symbol] > 0 and ((symbolToDollarsInvested[symbol] < self.getQuantitySharesHeld(symbol) * symbolToCurrentPrice[symbol]) if self.model == MINUTELY_RSI_ONLY_SELL_GAINS_MODEL else True):
                     sold = self.sell(symbol, price=symbolToCurrentPrice[symbol]) # will sell all held lots of {symbol}
                     purchaseOrSaleMade |= sold
             return purchaseOrSaleMade
-        #elif self.model == CROSSOVER_MODEL:
         else:
             return False
 
