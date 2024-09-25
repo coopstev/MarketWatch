@@ -80,7 +80,7 @@ if PURCHASER_ON:
 if secsStartedBeforeOpen:
     print(f"Started ~{secsStartedBeforeOpen}s before open, but now open. Entering isOpen() loop now.")
 else:
-    print("Started while open. Entering isOpen() loop now.")
+    print("Started after open. Entering isOpen() loop now.")
 
 isOpen = opener.isOpen()
 wasOpen = isOpen
