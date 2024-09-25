@@ -393,9 +393,9 @@ class Purchaser:
                 notProvided = [ symbol for symbol in symbols if symbol not in providedData ]
                 optionalData1 = optionalData1 + self.retreivers[self.model[:2]].getRSI(notProvided)
             for symbol, rsi in optionalData1:
-                if math.isnan(rsi):
-                    rsi = self.getCurrentPrice(symbol)
-                    if math.isnan(rsi):
+                if math.isnan(symbolToCurrentPrice[symbol]):
+                    symbolToCurrentPrice[symbol] = self.getCurrentPrice(symbol)
+                    if math.isnan(symbolToCurrentPrice[symbol]):
                         print(f"Could not obtain a current price for {symbol}.")
                         continue
                 if rsi <= buyThreshold and symbolToDollarsInvested[symbol] < buyAmountInDollars:
