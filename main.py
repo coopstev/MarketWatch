@@ -97,9 +97,9 @@ while isOpen:
     tracker.logChanges(data[RSI])
     #if PURCHASER_ON : minuteTracker.logChanges(minuteData[RSI])
 
-    if notifier.isTimeToSendNotification():
-        notified = notify(tracker, requester, retriever, notifier, emailer)
-        notifier.reset()
+    # if notifier.isTimeToSendNotification():
+        # notified = notify(tracker, requester, retriever, notifier, emailer)
+        # notifier.reset()
     
     if PURCHASER_ON:
         priceRequest = requester.formatRequest(requestedSymbols, PRICE)
