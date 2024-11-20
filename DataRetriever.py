@@ -111,6 +111,7 @@ class DataRetriever:
         rsis = []
         if self.debug : timeCalculating = 0.0
 
+        retry = []
         for symbol in rsiRequest:
             symbolTicks = closeValues[symbol]
 
@@ -125,10 +126,56 @@ class DataRetriever:
             # This returns a Pandas series.
             rsiSeries = rsi_14.rsi()
 
-            recentRSI = rsiSeries.values[-1]
-            if self.debug : print(f"{symbol} : {recentRSI}")
+            try:
+                recentRSI = rsiSeries.values[-1]
+                if self.debug : print(f"{symbol} : {recentRSI}")
+                rsis.append((symbol, recentRSI))
+            except:
+                retry.append(symbol)
+        if retry:
+            if len(retry) == 1:
+                symbol = retry[0]
+                if self.rsiType == DAILY:
+                    tickData = yf.download(tickers=symbol, period='6mo', interval='1d')#, session=self.session)
+                elif self.rsiType == MINUTELY:
+                    tickData = yf.download(tickers=symbol, period='1d', interval='1m')#, session=self.session)
+                closeValues = tickData['Close']
 
-            rsis.append((symbol, recentRSI))
+                # Use the common 14 period setting.
+                rsi_14 = RSIIndicator(close=closeValues, window=14)
+
+                # This returns a Pandas series.
+                rsiSeries = rsi_14.rsi()
+
+                try:
+                    recentRSI = rsiSeries.values[-1]
+                    if self.debug : print(f"{symbol} : {recentRSI}")
+                except:
+                    recentRSI = float("nan")
+                rsis.append((symbol, recentRSI))
+            else:
+                if self.rsiType == DAILY:
+                    tickData = yf.download(tickers=retry, period='6mo', interval='1d')#, session=self.session)
+                elif self.rsiType == MINUTELY:
+                    tickData = yf.download(tickers=retry, period='1d', interval='1m')#, session=self.session)
+                closeValues = tickData['Close']
+                
+                for symbol in retry:
+                    symbolTicks = closeValues[symbol]
+
+                    # Use the common 14 period setting.
+                    rsi_14 = RSIIndicator(close=symbolTicks, window=14)
+
+                    # This returns a Pandas series.
+                    rsiSeries = rsi_14.rsi()
+
+                    try:
+                        recentRSI = rsiSeries.values[-1]
+                        if self.debug : print(f"{symbol} : {recentRSI}")
+                    except:
+                        recentRSI = float("nan")
+                    rsis.append((symbol, recentRSI))
+        
         if self.debug : print(f"Average RSI calculation time PER SYMBOL for {numSymbols}-batch: {timeCalculating / numSymbols}")
         return rsis
 
