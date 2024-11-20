@@ -125,7 +125,7 @@ if (PURCHASER_ON and wasOpen) or DEBUG:
     minutely.overwriteHoldings()
     minutely.writeNewTransactionsToLedger()
     minutelyStatementString = minutely.saveStatement(DATE)
-    sent = adminEmailer.send_email(minutelyStatementString, False, f'Purchaser Activity for {MINUTELY_RSI_MODEL} Model {DATE}')
+    sent = emailer.send_email(minutelyStatementString, False, f'Purchaser Activity for {MINUTELY_RSI_MODEL} Model {DATE}')
 
     minutelyOnlyGains.overwriteHoldings()
     minutelyOnlyGains.writeNewTransactionsToLedger()
