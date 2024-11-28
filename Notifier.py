@@ -72,8 +72,8 @@ class Notifier:
         for state in RSIState:
             if notifyNonNeutrals and state == RSIState.NEUTRAL:
                 continue
+            obtained = '' if notifyNonNeutrals else " obtained"
             if stateToSymbolWithRSI[state]:
-                obtained = '' if notifyNonNeutrals else " obtained"
                 notification.write(f"{TEXT_PREFIX}The following stocks have{obtained} a {STATE_HEADERS[state]} indicator:{TEXT_POSTFIX}{NEWLINE}")
                 if isHTMLmsg : notification.write(f'\n<ul class="bullet">\n')
                 for symbol, rsi in stateToSymbolWithRSI[state]:
