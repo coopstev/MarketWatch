@@ -70,6 +70,7 @@ class Notifier:
         notification = open(filename, 'w')
         notification.write(HEADER)
         for state in RSIState:
+            if state == RSIState.ERROR : continue
             if notifyNonNeutrals and state == RSIState.NEUTRAL:
                 continue
             obtained = '' if notifyNonNeutrals else " obtained"

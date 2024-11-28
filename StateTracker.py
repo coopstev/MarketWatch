@@ -11,6 +11,7 @@ class StateTracker:
     def logChanges(self, updates):
         for symbol, rsi in updates:
             currentState = RSIState.getState(rsi)
+            if currentState == RSIState.ERROR : continue
             lastState = self.oldStates[symbol] if symbol not in self.changes else self.changes[symbol]
             if currentState != lastState:  # RSIState of symbol has changed
                 if currentState == RSIState.NEUTRAL:  # changed to NEUTRAL
@@ -39,6 +40,7 @@ class StateTracker:
             #     else: # this state has no net-change since the last notification; it may be volatile
             #         volatile.append(symbol)
         if self.notifyNonNeutrals : stateToSymbolWithRSI.pop(RSIState.NEUTRAL)
+        stateToSymbolWithRSI.pop(RSIState.ERROR)
         return stateToSymbolWithRSI
     
     def commitChanges(self):

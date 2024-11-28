@@ -1,4 +1,5 @@
 from enum import Enum
+from math import isnan
 
 class RSIState(Enum):
     HARDSELL = 3
@@ -8,8 +9,10 @@ class RSIState(Enum):
     SOFTBUY = -1
     BUY = -2
     HARDBUY = -3
+    ERROR = 0b11111111
 
     def getState(rsi):
+        if isnan(rsi) : return RSIState.ERROR
         if rsi >= 75 : return RSIState.HARDSELL
         elif rsi >= 70 : return RSIState.SELL
         elif rsi >= 65 : return RSIState.SOFTSELL
