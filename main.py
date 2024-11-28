@@ -108,7 +108,6 @@ while isOpen:
         minutely.strategy(requestedSymbols, minuteData[RSI], optionalPrices=prices[PRICE])
         minutelyOnlyGains.strategy(requestedSymbols, minuteData[RSI], optionalPrices=prices[PRICE])
 
-    time.sleep(1)
     isOpen = opener.isOpen()
 
 

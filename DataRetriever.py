@@ -16,6 +16,8 @@ RSI = "RSI"
 PRICE = "PRICE"
 PREVIOUS_DAILY_CLOSE = "regularMarketPreviousClose"
 METRICS = [ RSI, PRICE, PREVIOUS_DAILY_CLOSE ]
+API_REQUEST_DELAY = 60
+API_REQUEST_DELAY_SMALL = API_REQUEST_DELAY // 12
 
 DAILY = "1d"
 MINUTELY = "1m"
@@ -94,6 +96,7 @@ class DataRetriever:
         #     return rsis
 
         # Make sure to use a window with enough data for the RSI calculation.
+        time.sleep(API_REQUEST_DELAY)
         if self.debug : timerStart = time.time()
         if self.rsiType == DAILY:
             tickData = yf.download(tickers=rsiRequest, period='6mo', interval='1d')#, session=self.session)
@@ -134,6 +137,7 @@ class DataRetriever:
                 retry.append(symbol)
         if retry:
             if len(retry) == 1:
+                time.sleep(API_REQUEST_DELAY_SMALL)
                 symbol = retry[0]
                 if self.rsiType == DAILY:
                     tickData = yf.download(tickers=symbol, period='6mo', interval='1d')#, session=self.session)
@@ -154,6 +158,7 @@ class DataRetriever:
                     recentRSI = float("nan")
                 rsis.append((symbol, recentRSI))
             else:
+                time.sleep(API_REQUEST_DELAY)
                 if self.rsiType == DAILY:
                     tickData = yf.download(tickers=retry, period='6mo', interval='1d')#, session=self.session)
                 elif self.rsiType == MINUTELY:
@@ -197,6 +202,7 @@ class DataRetriever:
         numSymbols = len(priceRequest)
         if numSymbols == 1:
             symbol = priceRequest[0]
+            time.sleep(API_REQUEST_DELAY_SMALL)
             ticker = yf.download(tickers=symbol, period='1d', interval='1m')
             tickData = ticker['Close']
             if tickData.shape[0] > 0:
@@ -208,6 +214,7 @@ class DataRetriever:
             else:
                 price = float("nan")
             if math.isnan(price):
+                time.sleep(API_REQUEST_DELAY_SMALL)
                 ticker = yf.download(tickers=symbol, period='1d', interval='1m')
                 tickData = ticker['Close']
                 if tickData.shape[0] > 0:
@@ -217,10 +224,12 @@ class DataRetriever:
                         idx -= 1
                         price = tickData.iloc[idx]
             return [ (symbol, price) ]
+        
         USE_TICKER = True
         if USE_TICKER:
             symbolPrices = []
             retry = []
+            time.sleep(API_REQUEST_DELAY)
             tickers = yf.download(tickers=priceRequest, period='1d', interval='1m')
             tickData = tickers['Close']
             for symbol in priceRequest:
@@ -236,6 +245,7 @@ class DataRetriever:
                 else : symbolPrices.append((symbol, price))
             if retry:
                 if len(retry) == 1 : return symbolPrices + self.getCurrentPrice(retry)
+                time.sleep(API_REQUEST_DELAY)
                 tickers = yf.download(tickers=retry, period='1d', interval='1m')
                 tickData = tickers['Close']
                 for symbol in retry:
@@ -270,6 +280,7 @@ class DataRetriever:
             end_time = self.currentTime()
             start_time = end_time - timedelta(minutes=2)
 
+            time.sleep(API_REQUEST_DELAY)
             tickData = yf.download(tickers=priceRequest, period='1d', interval='1m', auto_adjust=False, keepna=True, session=self.session)
             closeValues = tickData['Close']
             return [ (symbol, closeValues[symbol][-1]) for symbol in priceRequest ]
@@ -301,14 +312,17 @@ class DataRetriever:
             else:
                 if numSymbols == 1:
                     symbol = priceRequest[0]
+                    time.sleep(API_REQUEST_DELAY_SMALL)
                     ticker = yf.download(tickers=symbol, period='5d', interval='1d')
                     tickData = ticker['Close']
                     price = tickData.iloc[-2] if tickData.shape[0] >= 2 else float("nan")
                     if math.isnan(price):
+                        time.sleep(API_REQUEST_DELAY_SMALL)
                         ticker = yf.download(tickers=symbol, period='5d', interval='1d')
                         tickData = ticker['Close']
                         price = tickData.iloc[-2] if tickData.shape[0] >= 2 else float("nan")
                     return [ (symbol, price) ]
+                time.sleep(API_REQUEST_DELAY)
                 tickData = yf.download(tickers=priceRequest, period='5d', interval='1d')
                 closeValues = tickData['Close']
                 symbolPrices = []
@@ -321,6 +335,7 @@ class DataRetriever:
                         symbolPrices.append((symbol, price))
                 if retry:
                     if len(retry) == 1 : return symbolPrices + self.getPreviousDailyClose(retry, isBeforeOpen)
+                    time.sleep(API_REQUEST_DELAY)
                     tickData = yf.download(tickers=retry, period='5d', interval='1d')
                     closeValues = tickData['Close']
                     for symbol in retry:
